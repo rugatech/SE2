@@ -1,0 +1,386 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "REHS Biosafety Cabinets API",
+        "description": "Instructions for using the API",
+        "version": "1.0.0"
+    },
+    "host": "myrehs.rutgers.edu",
+    "schemes": [
+        "https"
+    ],
+    "basePath": "/biosafety_cabinets/api",
+    "produces": [
+        "application/json"
+    ],
+    "tags": [
+        {
+            "name": "people",
+            "description": "Everything about people"
+        },
+        {
+            "name": "cabinets",
+            "description": "Everything about cabinets"
+        }
+    ],
+    "paths": {
+        "/people": {
+            "post": {
+                "tags": [
+                    "people"
+                ],
+                "summary": "Add a new person",
+                "description": "",
+                "operationId": "addPerson",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "Person object that needs to be added to the roster",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/AddPeople"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "405": {
+                        "description": "Invalid Input"
+                    },
+                    "500": {
+                        "description": "Unable to add person"
+                    }
+                }
+            }
+        },
+        "/people/{pkey}": {
+            "put": {
+                "tags": [
+                    "people"
+                ],
+                "summary": "Update a person",
+                "description": "",
+                "operationId": "editPerson",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "pkey",
+                        "in": "path",
+                        "description": "pkey for the person",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "Person object that needs to be updated",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/AddPeople"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "404": {
+                        "description": "Person not found"
+                    },
+                    "405": {
+                        "description": "Invalid Input"
+                    },
+                    "500": {
+                        "description": "Unable to save person"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "people"
+                ],
+                "summary": "Delete a person",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "pkey",
+                        "in": "path",
+                        "description": "pkey for the person",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "404": {
+                        "description": "Person not found"
+                    },
+                    "405": {
+                        "description": "Invalid Input"
+                    },
+                    "500": {
+                        "description": "Unable to delete person"
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "people"
+                ],
+                "summary": "Fetch a person",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "pkey",
+                        "in": "path",
+                        "description": "pkey for the person",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "404": {
+                        "description": "Person not found"
+                    }
+                }
+            }
+        },
+        "/cabinet": {
+            "post": {
+                "tags": [
+                    "cabinets"
+                ],
+                "summary": "Add a new biosafety cabinet",
+                "description": "",
+                "operationId": "addCabinet",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "Cabinet object to be added to the inventory",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/AddCabinet"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "405": {
+                        "description": "Invalid Input"
+                    },
+                    "500": {
+                        "description": "Unable to add cabinet"
+                    }
+                }
+            }
+        },
+        "/cabinet/{pkey}": {
+            "put": {
+                "tags": [
+                    "cabinets"
+                ],
+                "summary": "Update a cabinet",
+                "description": "",
+                "operationId": "editCabinet",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "pkey",
+                        "in": "path",
+                        "description": "pkey for the cabinet",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "Cabinet object that needs to be updated",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/AddCabinet"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "404": {
+                        "description": "Cabinet not found"
+                    },
+                    "405": {
+                        "description": "Invalid Input"
+                    },
+                    "500": {
+                        "description": "Unable to save cabinet"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "cabinets"
+                ],
+                "summary": "Delete a cabinet",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "pkey",
+                        "in": "path",
+                        "description": "pkey for the cabinet",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "404": {
+                        "description": "Cabinet not found"
+                    },
+                    "405": {
+                        "description": "Invalid Input"
+                    },
+                    "500": {
+                        "description": "Unable to delete cabinet"
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "cabinets"
+                ],
+                "summary": "Fetch a cabinet",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "pkey",
+                        "in": "path",
+                        "description": "pkey for the cabinet",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "404": {
+                        "description": "Cabinet not found"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "AddPeople": {
+            "type": "object",
+            "properties": {
+                "fname": {
+                    "type": "string"
+                },
+                "lname": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "netid": {
+                    "type": "string"
+                },
+                "elcid": {
+                    "type": "integer"
+                },
+                "user_type": {
+                    "type": "integer"
+                }
+            }
+        },
+        "AddCabinet": {
+            "type": "object",
+            "properties": {
+                "company": {
+                    "type": "string"
+                },
+                "asset": {
+                    "type": "integer"
+                },
+                "manufacturer": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "serial_number": {
+                    "type": "string"
+                },
+                "frequency": {
+                    "type": "integer"
+                },
+                "contact": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "integer"
+                },
+                "cabinet_type": {
+                    "type": "string"
+                },
+                "bl2": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "externalDocs": {
+        "description": "Find out more about Swagger",
+        "url": "http://swagger.io"
+    }
+}
