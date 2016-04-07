@@ -37,7 +37,7 @@ class datastore{
 			$person=$token->getClaim('user');
 			$expire=$token->getClaim('exp');
 			if($expire>(time()+86400)){throw new DatastoreException('Token has expired',3);}
-			$pstmt=$this->db->prepare('SELECT people.* FROM sessions INNER JOIN people ON people.pkey=sessions.person WHERE jwt=?');
+			$pstmt=$this->db->prepare('SELECT users.* FROM session INNER JOIN users ON users.pkey=session.user WHERE sessid=?');
 			$pstmt->execute([$this->jwt]);
 			if($pstmt->rowCount()>0){
 				$rs=$pstmt->fetch(\PDO::FETCH_ASSOC);
@@ -55,38 +55,91 @@ class datastore{
 		return $data;
 	}
 
-	public function loginMyREHSUSer($myrehs_ticket){
-		$pstmt=$this->db->prepare('SELECT ep.pkey, ep.netid, ep.email FROM elcid.sessions AS es LEFT JOIN elcid.people_program_rights AS eppr ON eppr.person = es.`user` INNER JOIN elcid.people AS ep ON ep.pkey=es.`user` WHERE myrehs_ticket=? AND eppr.program = 66 LIMIT 1');
-		$pstmt2=$this->db->prepare('INSERT INTO sessions (person,api_key,create_ts,jwt) VALUES (?,?,?,?)');
+	public function login($data){
+		if(empty($data['email'])){throw new DatastoreException('Invalid E-Mail Address',1);}
+		if(empty($data['password'])){throw new DatastoreException('Invalid Password',1);}
+		$pstmt=$this->db->prepare('SELECT * FROM users WHERE email=? LIMIT 1');
 		try{
-			$pstmt->execute([$myrehs_ticket]);
-			if($pstmt->rowCount()<0){throw new DatastoreException('ERROR, MyREHS session informatin not found',0);}
-			$myrehs_user=$pstmt->fetch(PDO::FETCH_ASSOC);
-			$bytes = openssl_random_pseudo_bytes(16);
-			$api_key=bin2hex($bytes);
-			$qry='SELECT * FROM people WHERE ';
-			if(!empty($myrehs_user['netid'])){$qry.='netid="'.$myrehs_user['netid'].'"';}
-			else{$qry.='elcid="'.$myrehs_user['elcid'].'"';}
-			$stmt=$this->db->query($qry.' LIMIT 1');
-			if($stmt->rowCount()<0){throw new DatastoreException('ERROR, You are not authorized to use this database',0);}
-			$person=$stmt->fetch(PDO::FETCH_ASSOC);
-			$ts=date('Y-m-d H:i:s');
-			$expire=date('Y-m-d H:i:s',mktime(date('H')+24,date('i'),date('s'),date('m'),date('d'),date('Y')));
-
-			$signer = new Sha256();
-			$token = (new Builder())->setIssuer('https://halflife.rutgers.edu')
-				->setIssuedAt(time())
-				->setExpiration(time() + 86400)
-				->set('user', $person['pkey'])
-				->set('user_type',$person['user_type'])
-				->sign($signer,$this->hashKey)
-				->getToken();
-			$pstmt2->execute([$person['pkey'],$api_key,$ts,$token]);
-			return $token;
+			$pstmt->execute([$data['email']]);
+			if($pstmt->rowCount()<1){throw new DatastoreException('User Not Found',1);}
+			$user=$pstmt->fetch(\PDO::FETCH_ASSOC);
+			if(!password_verify($data['password'],$user['password'])){
+				throw new DatastoreException('Incorrect Password',3);
+			}
+			else{
+				unset($pstmt);
+				$pstmt=$this->db->prepare('INSERT INTO session (user,sessid) VALUES (?,?)');
+				$ts=date('Y-m-d H:i:s');
+				$expire=date('Y-m-d H:i:s',mktime(date('H')+24,date('i'),date('s'),date('m'),date('d'),date('Y')));
+				$signer = new Sha256();
+				$token = (new Builder())->setIssuer('http://rugatech.com')
+					->setIssuedAt(time())
+					->setExpiration(time() + 86400)
+					->set('user', $person['pkey'])
+					->set('user_type',$person['user_type'])
+					->sign($signer,$this->hashKey)
+					->getToken();
+				$pstmt->execute([$user['pkey'],$token]);
+				return $token;
+			}
 		}
-		catch(\Exception $e){
-			throw new DatastoreException('Unable to process request',0);
-			$this->__logError($e->getMessage(),__FUNCTION__);
+		catch(\PDOException $e){
+			throw new DatastoreException('Unable to authenicate user',2);
+		}
+	}
+
+	public function addUser($data){
+		if(empty($data['fname'])){throw new DatastoreException('Invalid First Name',1);}
+		if(empty($data['lname'])){throw new DatastoreException('Invalid Last Name',1);}
+		if(empty($data['email'])){throw new DatastoreException('Invalid E-Mail Address',1);}
+		if(empty($data['password'])){throw new DatastoreException('Invalid Password',1);}
+		if (filter_var($data['email'], FILTER_VALIDATE_EMAIL) === false){throw new DatastoreException('Invalid E-Mail Address',1);}
+		$data=$this->_sanitize($data);
+		$pstmt=$this->db->prepare('INSERT INTO users (fname,lname,email,password) VALUES (?,?,?,?)');
+		try{
+			$salt = substr(strtr(base64_encode(mcrypt_create_iv(22, MCRYPT_DEV_URANDOM)), '+', '.'), 0, 22);
+			$options = [
+			    'cost' => 11,
+			    'salt' => $salt,
+			];
+			$passwd=password_hash($data['password'], PASSWORD_BCRYPT, $options);
+			$pstmt->execute([$data['fname'],$data['lname'],$data['email'],$passwd]);
+		}
+		catch(\PDOException $e){
+			throw new DatastoreException('Unable to add person',2);
+		}
+	}
+
+	public function editUser($data,$pkey){
+		if(empty($data['fname'])){throw new DatastoreException('Invalid First Name',1);}
+		if(empty($data['lname'])){throw new DatastoreException('Invalid Last Name',1);}
+		if(empty($data['email'])){throw new DatastoreException('Invalid E-Mail Address',1);}
+		if (filter_var($data['email'], FILTER_VALIDATE_EMAIL) === false){throw new DatastoreException('Invalid E-Mail Address',1);}
+		$this->__authenticateUser();
+		$data=$this->_sanitize($data);
+		$pstmt=$this->db->prepare('UPDATE users SET fname=?,lname=?,email=? WHERE pkey=?)');
+		try{
+			$pstmt->execute([$data['fname'],$data['lname'],$data['email'],$pkey]);
+		}
+		catch(\PDOException $e){
+			throw new DatastoreException('Unable to add person',2);
+		}
+	}
+
+	public function getUser($pkey){
+		if(!is_numeric($pkey)){throw new DatastoreException('Invalid ID supplied',5);}
+		try{
+			$this->__authenticateUser();
+			$pstmt=$this->db->prepare('SELECT pkey,fname,lname,email FROM users WHERE pkey=?');
+			$pstmt->execute([$pkey]);
+			if($pstmt->rowCount()>0){
+				$rs=$pstmt->fetch(\PDO::FETCH_ASSOC);
+				return(json_encode($rs,JSON_NUMERIC_CHECK));
+			}
+			else{throw new DatastoreException('Person not found',1);}
+		}
+		catch(\PDOException $e){
+			throw new DatastoreException('Database Error',2);
 		}
 	}
 }

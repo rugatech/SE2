@@ -4,7 +4,7 @@ namespace bsc\datastore;
 class PDODriver extends \PDO
 {
 	public function __construct(){
-		parent::__construct('mysql:host='.get_cfg_var('db_host').';dbname=bsc;charset=UTF8',get_cfg_var('db_www_user'),get_cfg_var('db_www_user_pswd'));
+		parent::__construct('mysql:host=localhost;dbname=se2;charset=utf8','www','48fgh38g64');
 		$this->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 	}
 

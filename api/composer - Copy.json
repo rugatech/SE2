@@ -8,7 +8,9 @@
     },
 	"autoload":{
 		"psr-4":{
-			"bsc\\":"bsc/"
+			"bsc\\datastore\\":"bsc/datastore/",
+			"bsc\\api\\":"bsc/api/",
+			"bsc\\bscException\\":"bsc/"
 		}
 	}
 }
