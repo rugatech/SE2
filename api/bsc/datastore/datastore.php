@@ -110,21 +110,21 @@ class datastore{
 		}
 	}
 
-	public function editUser($data,$pkey){
-		if(empty($data['fname'])){throw new DatastoreException('Invalid First Name',1);}
-		if(empty($data['lname'])){throw new DatastoreException('Invalid Last Name',1);}
-		if(empty($data['email'])){throw new DatastoreException('Invalid E-Mail Address',1);}
-		if (filter_var($data['email'], FILTER_VALIDATE_EMAIL) === false){throw new DatastoreException('Invalid E-Mail Address',1);}
-		$this->__authenticateUser();
-		$data=$this->_sanitize($data);
-		$pstmt=$this->db->prepare('UPDATE users SET fname=?,lname=?,email=? WHERE pkey=?)');
-		try{
-			$pstmt->execute([$data['fname'],$data['lname'],$data['email'],$pkey]);
-		}
-		catch(\PDOException $e){
-			throw new DatastoreException('Unable to add person',2);
-		}
-	}
+	//public function editUser($data,$pkey){
+	//	if(empty($data['fname'])){throw new DatastoreException('Invalid First Name',1);}
+	//	if(empty($data['lname'])){throw new DatastoreException('Invalid Last Name',1);}
+	//	if(empty($data['email'])){throw new DatastoreException('Invalid E-Mail Address',1);}
+	//	if (filter_var($data['email'], FILTER_VALIDATE_EMAIL) === false){throw new DatastoreException('Invalid E-Mail Address',1);}
+	//	$this->__authenticateUser();
+	//	$data=$this->_sanitize($data);
+	//	$pstmt=$this->db->prepare('UPDATE users SET fname=?,lname=?,email=? WHERE pkey=?)');
+	//	try{
+	//		$pstmt->execute([$data['fname'],$data['lname'],$data['email'],$pkey]);
+	//	}
+	//	catch(\PDOException $e){
+	//		throw new DatastoreException('Unable to add person',2);
+	//	}
+	//}
 
 	public function getUser($pkey){
 		if(!is_numeric($pkey)){throw new DatastoreException('Invalid ID supplied',5);}

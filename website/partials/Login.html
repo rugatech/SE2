@@ -1,0 +1,25 @@
+<div class="rehs_header">Login</div>
+
+<div class="panel panel-primary" id="searchDiv">
+	<div class="panel-heading">Input your Email/Password</div>
+    <div class="panel-body">
+    	<form class="form-horizontal" role="form">
+   	    	<div class="form-group">
+	       	    <label for="email" class="control-label col-xs-4">E-Mail</label>
+           		<div class="col-xs-8">
+	                <input type="text" class="form-control input-sm" id="email" data-ng-model="lCtrl.email">
+           		</div>
+       		</div>
+       		<div class="form-group">
+	            <label for="email" class="control-label col-xs-4">Password</label>
+           		<div class="col-xs-8">
+	                <input type="passwprd" class="form-control input-sm" id="password" data-ng-model="lCtrl.password">
+           		</div>
+       		</div>
+       		<div style="margin-bottom:0px;width:100%;text-align:center">
+               	<button type="button" class="btn btn-sm btn-info" data-ng-click="lCtrl.submitLogin()" style="margin-right:5px"><i class="fa fa-check fa-lg" style="margin-right:2px"></i>Submit</button>
+               	<button type="button" class="btn btn-sm btn-info" data-ng-click="lCtrl.createUser()" style="margin-left:5px"><i class="fa fa-user-plus fa-lg" style="margin-right:2px"></i>Create User</button>
+	       	</div>
+	   	</form>
+	</div>
+</div>

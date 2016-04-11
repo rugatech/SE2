@@ -1,35 +1,31 @@
 {
     "swagger": "2.0",
     "info": {
-        "title": "REHS Biosafety Cabinets API",
+        "title": "SE2 - Group #16 - Stock Predictor API",
         "description": "Instructions for using the API",
         "version": "1.0.0"
     },
-    "host": "myrehs.rutgers.edu",
+    "host": "www.rugatech.com",
     "schemes": [
-        "https"
+        "http"
     ],
-    "basePath": "/biosafety_cabinets/api",
+    "basePath": "/se2/api",
     "produces": [
         "application/json"
     ],
     "tags": [
         {
-            "name": "people",
-            "description": "Everything about people"
-        },
-        {
-            "name": "cabinets",
-            "description": "Everything about cabinets"
+            "name": "Users",
+            "description": "Everything about users"
         }
     ],
     "paths": {
-        "/people": {
+        "/user": {
             "post": {
                 "tags": [
-                    "people"
+                    "Users"
                 ],
-                "summary": "Add a new person",
+                "summary": "Add a new user",
                 "description": "",
                 "operationId": "addPerson",
                 "consumes": [
@@ -42,10 +38,10 @@
                     {
                         "in": "body",
                         "name": "body",
-                        "description": "Person object that needs to be added to the roster",
+                        "description": "Person object that needs to be added as a user",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/AddPeople"
+                            "$ref": "#/definitions/AddUsers"
                         }
                     }
                 ],
@@ -57,19 +53,19 @@
                         "description": "Invalid Input"
                     },
                     "500": {
-                        "description": "Unable to add person"
+                        "description": "Unable to add user"
                     }
                 }
             }
         },
-        "/people/{pkey}": {
+        "/user/{pkey}": {
             "put": {
                 "tags": [
-                    "people"
+                    "Users"
                 ],
-                "summary": "Update a person",
+                "summary": "Add a new user",
                 "description": "",
-                "operationId": "editPerson",
+                "operationId": "editUser",
                 "consumes": [
                     "application/json"
                 ],
@@ -78,19 +74,12 @@
                 ],
                 "parameters": [
                     {
-                        "name": "pkey",
-                        "in": "path",
-                        "description": "pkey for the person",
-                        "required": true,
-                        "type": "integer"
-                    },
-                    {
                         "in": "body",
                         "name": "body",
-                        "description": "Person object that needs to be updated",
+                        "description": "Person object that needs to be added as a user",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/AddPeople"
+                            "$ref": "#/definitions/AddUsers"
                         }
                     }
                 ],
@@ -98,84 +87,23 @@
                     "200": {
                         "description": "Ok"
                     },
-                    "404": {
-                        "description": "Person not found"
-                    },
                     "405": {
                         "description": "Invalid Input"
                     },
                     "500": {
-                        "description": "Unable to save person"
-                    }
-                }
-            },
-            "delete": {
-                "tags": [
-                    "people"
-                ],
-                "summary": "Delete a person",
-                "produces": [
-                    "application/json"
-                ],
-                "parameters": [
-                    {
-                        "name": "pkey",
-                        "in": "path",
-                        "description": "pkey for the person",
-                        "required": true,
-                        "type": "integer"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Ok"
-                    },
-                    "404": {
-                        "description": "Person not found"
-                    },
-                    "405": {
-                        "description": "Invalid Input"
-                    },
-                    "500": {
-                        "description": "Unable to delete person"
-                    }
-                }
-            },
-            "get": {
-                "tags": [
-                    "people"
-                ],
-                "summary": "Fetch a person",
-                "produces": [
-                    "application/json"
-                ],
-                "parameters": [
-                    {
-                        "name": "pkey",
-                        "in": "path",
-                        "description": "pkey for the person",
-                        "required": true,
-                        "type": "integer"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Ok"
-                    },
-                    "404": {
-                        "description": "Person not found"
+                        "description": "Unable to add user"
                     }
                 }
             }
         },
-        "/cabinet": {
+        "/user/login": {
             "post": {
                 "tags": [
-                    "cabinets"
+                    "Users"
                 ],
-                "summary": "Add a new biosafety cabinet",
+                "summary": "Login",
                 "description": "",
-                "operationId": "addCabinet",
+                "operationId": "login",
                 "consumes": [
                     "application/json"
                 ],
@@ -186,10 +114,10 @@
                     {
                         "in": "body",
                         "name": "body",
-                        "description": "Cabinet object to be added to the inventory",
+                        "description": "Log into the website",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/AddCabinet"
+                            "$ref": "#/definitions/Login"
                         }
                     }
                 ],
@@ -197,99 +125,24 @@
                     "200": {
                         "description": "Ok"
                     },
-                    "405": {
-                        "description": "Invalid Input"
+                    "401": {
+                        "description": "Incorrect Password"
+                    },
+                    "404": {
+                        "description": "Invalid Password OR User Not Found OR Invalid E-Mail Address"
                     },
                     "500": {
-                        "description": "Unable to add cabinet"
+                        "description": "Unable to authenicate user"
                     }
                 }
             }
         },
-        "/cabinet/{pkey}": {
-            "put": {
-                "tags": [
-                    "cabinets"
-                ],
-                "summary": "Update a cabinet",
-                "description": "",
-                "operationId": "editCabinet",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "parameters": [
-                    {
-                        "name": "pkey",
-                        "in": "path",
-                        "description": "pkey for the cabinet",
-                        "required": true,
-                        "type": "integer"
-                    },
-                    {
-                        "in": "body",
-                        "name": "body",
-                        "description": "Cabinet object that needs to be updated",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/AddCabinet"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Ok"
-                    },
-                    "404": {
-                        "description": "Cabinet not found"
-                    },
-                    "405": {
-                        "description": "Invalid Input"
-                    },
-                    "500": {
-                        "description": "Unable to save cabinet"
-                    }
-                }
-            },
-            "delete": {
-                "tags": [
-                    "cabinets"
-                ],
-                "summary": "Delete a cabinet",
-                "produces": [
-                    "application/json"
-                ],
-                "parameters": [
-                    {
-                        "name": "pkey",
-                        "in": "path",
-                        "description": "pkey for the cabinet",
-                        "required": true,
-                        "type": "integer"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Ok"
-                    },
-                    "404": {
-                        "description": "Cabinet not found"
-                    },
-                    "405": {
-                        "description": "Invalid Input"
-                    },
-                    "500": {
-                        "description": "Unable to delete cabinet"
-                    }
-                }
-            },
+        "/user/{pkey}": {
             "get": {
                 "tags": [
-                    "cabinets"
+                    "Users"
                 ],
-                "summary": "Fetch a cabinet",
+                "summary": "Fetch a user",
                 "produces": [
                     "application/json"
                 ],
@@ -297,7 +150,7 @@
                     {
                         "name": "pkey",
                         "in": "path",
-                        "description": "pkey for the cabinet",
+                        "description": "pkey for the person",
                         "required": true,
                         "type": "integer"
                     }
@@ -307,14 +160,14 @@
                         "description": "Ok"
                     },
                     "404": {
-                        "description": "Cabinet not found"
+                        "description": "Person not found"
                     }
                 }
             }
         }
     },
     "definitions": {
-        "AddPeople": {
+        "AddUsers": {
             "type": "object",
             "properties": {
                 "fname": {
@@ -326,54 +179,18 @@
                 "email": {
                     "type": "string"
                 },
-                "netid": {
+                "password": {
                     "type": "string"
-                },
-                "elcid": {
-                    "type": "integer"
-                },
-                "user_type": {
-                    "type": "integer"
                 }
             }
         },
-        "AddCabinet": {
+        "Login": {
             "type": "object",
             "properties": {
-                "company": {
+                "email": {
                     "type": "string"
                 },
-                "asset": {
-                    "type": "integer"
-                },
-                "manufacturer": {
-                    "type": "string"
-                },
-                "model": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "serial_number": {
-                    "type": "string"
-                },
-                "frequency": {
-                    "type": "integer"
-                },
-                "contact": {
-                    "type": "string"
-                },
-                "location": {
-                    "type": "integer"
-                },
-                "cabinet_type": {
-                    "type": "string"
-                },
-                "bl2": {
-                    "type": "string"
-                },
-                "comments": {
+                "password": {
                     "type": "string"
                 }
             }

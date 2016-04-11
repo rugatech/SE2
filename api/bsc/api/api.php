@@ -79,19 +79,19 @@ class api
 			}
 		});
 
-		$app->put('/user/{pkey}',function($request, $response, $args){
-			try{
-				$json=json_decode($request->getBody(),TRUE);
-				if(!$json){
-					throw new apiException('Malformed JSON request',5);
-				}
-				$retval=(new datastore\datastore($_SERVER['HTTP_AUTHORIZATION']))->editUser($json,$args['pkey']);
-				return $response;
-			}
-			catch(DatastoreException $e){
-			    throw new apiException($e->getMessage(),$e->getCode());
-			}
-		});
+		//$app->put('/user/{pkey}',function($request, $response, $args){
+		//	try{
+		//		$json=json_decode($request->getBody(),TRUE);
+		//		if(!$json){
+		//			throw new apiException('Malformed JSON request',5);
+		//		}
+		//		$retval=(new datastore\datastore($_SERVER['HTTP_AUTHORIZATION']))->editUser($json,$args['pkey']);
+		//		return $response;
+		//	}
+		//	catch(DatastoreException $e){
+		//	    throw new apiException($e->getMessage(),$e->getCode());
+		//	}
+		//});
 
 		//$app->group('/user',function(){
 			//$this->get('/{pkey}',function ($request, $response, $args){

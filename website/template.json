@@ -1,0 +1,25 @@
+{
+	"db":"minors",
+	"progID":"9kpAn1m50d7rpa2f",
+	"ssl":true,
+	"rehs_link":false,
+	"program_title":"Protection of Minors - LC",
+	"title":"Protection of Minors - LC",
+	"version":1.00,
+	"additional_js_css_files":[
+		"lib/angular-1.4.7/angular.min.js",
+		"lib/angular-ui-router.min.js",
+		"lib/angular-1.4.7/angular-animate.min.js",
+		"lib/ui-bootstrap-tpls-0.14.3.min.js",
+		"lib/bootstrap/css/bootstrap.min.css",
+		"css/icarus.css"
+	],
+	"jMenubar":[
+		{
+			"text":"Courses","restriction":"D","sublinks":[
+				{"text":"Events2","link":"events.php","restriction":"D"}
+			]
+		},
+		{"text":"Main Menu","link":"app.php","restriction":"A"}
+	]
+}

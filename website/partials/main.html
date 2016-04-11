@@ -1,0 +1,96 @@
+<div class="rehs_header">Main Menu</div>
+
+<!--<div class="panel panel-primary" id="searchDiv">
+	<div class="panel-heading">Search</div>
+    <div class="panel-body">
+    	<form class="form-horizontal" role="form">
+   	    	<div class="form-group">
+	       	    <label for="netid" class="control-label col-xs-4">NetID</label>
+           		<div class="col-xs-8">
+	                <input type="text" class="form-control input-sm" id="netid" data-ng-model="psCtrl.netid">
+           		</div>
+       		</div>
+       		<div class="form-group">
+	            <label for="email" class="control-label col-xs-4">E-Mail</label>
+           		<div class="col-xs-8">
+	                <input type="text" class="form-control input-sm" id="email" data-ng-model="psCtrl.email">
+           		</div>
+       		</div>
+       		<div class="form-group">
+	            <label for="fname" class="control-label col-xs-4">First Name</label>
+           		<div class="col-xs-8">
+	                <input type="text" class="form-control input-sm" id="fname" data-ng-model="psCtrl.fname">
+           		</div>
+       		</div>
+       		<div class="form-group">
+	            <label for="lname" class="control-label col-xs-4">Last Name</label>
+           		<div class="col-xs-8">
+	                <input type="text" class="form-control input-sm" id="lname" data-ng-model="psCtrl.lname">
+           		</div>
+       		</div>
+       		<div style="margin-bottom:0px;width:100%;text-align:center">
+              	<button type="button" class="btn btn-sm btn-info" data-ng-click="mCtrl.getUser(4)">Participants</button>
+	       	</div>
+	   	</form>
+	</div>
+</div>
+
+<div class="panel panel-success results-table" id="participantsDiv" data-ng-show="psCtrl.participantsDiv">
+	<div class="panel-heading">Participant Results</div>
+    <div class="panel-body">
+		<table class="table table-condensed table-hover">
+			<thead>
+				<tr>
+					<th>&nbsp;</th>
+					<th>First Name</th>
+					<th>Last Name</th>
+					<th>Email</th>
+					<th>NetID</th>
+					<th>Program</th>
+					<th>Last ts</th>
+					<th>Create ts</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr data-ng-repeat="person in psCtrl.people">
+					<td><a class="sprite_pencil spriteLink" data-ng-click="psCtrl.openModal($index)"></a></td>
+					<td>{{person.fname}}</td>
+					<td>{{person.lname}}</td>
+					<td>{{person.email}}</td>
+					<td>{{person.netid}}</td>
+					<td>{{person.permit_title}}</td>
+					<td>{{person.ts}}</td>
+					<td>{{person.create_ts}}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<div class="panel panel-success results-table" id="registrationsDiv" data-ng-show="psCtrl.registrationsDiv">
+	<div class="panel-heading">Registration Results</div>
+    <div class="panel-body">
+		<table class="table table-condensed table-hover">
+			<thead>
+				<tr>
+					<th>First Name</th>
+					<th>Last Name</th>
+					<th>Email</th>
+					<th>NetID</th>
+					<th>Timestamp</th>
+					<th>Reg Type</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr data-ng-repeat="person in psCtrl.people">
+					<td>{{person.fname}}</td>
+					<td>{{person.lname}}</td>
+					<td>{{person.email}}</td>
+					<td>{{person.netid}}</td>
+					<td>{{person.ts}}</td>
+					<td>{{person.reg_type}}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div> -->
