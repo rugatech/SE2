@@ -59,11 +59,37 @@
             }
         },
         "/user/{pkey}": {
+			      "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Fetch a user",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "pkey",
+                        "in": "path",
+                        "description": "pkey for the person",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "404": {
+                        "description": "Person not found"
+                    }
+                }
+            },
             "put": {
                 "tags": [
                     "Users"
                 ],
-                "summary": "Add a new user",
+                "summary": "Edit a user",
                 "description": "",
                 "operationId": "editUser",
                 "consumes": [
@@ -74,12 +100,19 @@
                 ],
                 "parameters": [
                     {
+                        "name": "pkey",
+                        "in": "path",
+                        "description": "pkey for the user",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
                         "in": "body",
                         "name": "body",
-                        "description": "Person object that needs to be added as a user",
+                        "description": "User object that needs to be editted",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/AddUsers"
+                            "$ref": "#/definitions/EditUsers"
                         }
                     }
                 ],
@@ -87,11 +120,14 @@
                     "200": {
                         "description": "Ok"
                     },
+                    "401": {
+                        "description": "You cannot edit this user"
+                    },
                     "405": {
                         "description": "Invalid Input"
                     },
                     "500": {
-                        "description": "Unable to add user"
+                        "description": "Unable to edit user"
                     }
                 }
             }
@@ -137,30 +173,23 @@
                 }
             }
         },
-        "/user/{pkey}": {
+        "/user/logout": {
             "get": {
                 "tags": [
                     "Users"
                 ],
-                "summary": "Fetch a user",
+                "summary": "Logout",
+                "description": "",
+                "operationId": "logout",
                 "produces": [
                     "application/json"
-                ],
-                "parameters": [
-                    {
-                        "name": "pkey",
-                        "in": "path",
-                        "description": "pkey for the person",
-                        "required": true,
-                        "type": "integer"
-                    }
                 ],
                 "responses": {
                     "200": {
                         "description": "Ok"
                     },
-                    "404": {
-                        "description": "Person not found"
+                    "500": {
+                        "description": "Database Error"
                     }
                 }
             }
@@ -180,6 +209,20 @@
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "EditUsers": {
+            "type": "object",
+            "properties": {
+                "fname": {
+                    "type": "string"
+                },
+                "lname": {
+                    "type": "string"
+                },
+                "email": {
                     "type": "string"
                 }
             }

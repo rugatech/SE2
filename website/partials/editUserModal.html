@@ -1,0 +1,29 @@
+<div id="editUserModal" role="dialog">
+	<div class="modal-header"><h4 class="modal-title">Edit Profile</h4></div>
+	<div class="modal-body" style="font-size:12px">
+   		<form class="form-horizontal" role="form">
+   	    	<div class="form-group">
+       	    	<label for="netid" class="control-label col-xs-4">First Name</label>
+          		<div class="col-xs-8">
+	                <input type="text" class="form-control input-sm" id="eu_fname" data-ng-model="euCtrl.fname">
+          		</div>
+      		</div>
+   	    	<div class="form-group">
+       	    	<label for="netid" class="control-label col-xs-4">Last Name</label>
+          		<div class="col-xs-8">
+	                <input type="text" class="form-control input-sm" id="eu_lname" data-ng-model="euCtrl.lname">
+          		</div>
+      		</div>
+   	    	<div class="form-group">
+       	    	<label for="netid" class="control-label col-xs-4">E-Mail</label>
+          		<div class="col-xs-8">
+	                <input type="text" class="form-control input-sm" id="eu_email" data-ng-model="euCtrl.email">
+          		</div>
+      		</div>
+   		</form>
+   	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-sm btn-info" data-ng-click="euCtrl.save()">Save</button>
+		<button type="button" class="btn btn-sm btn-info" data-ng-click="euCtrl.close()">Cancel</button>
+	</div>
+</div>

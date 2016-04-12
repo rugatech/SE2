@@ -15,6 +15,14 @@ icarusApp.config(function ($stateProvider, $urlRouterProvider){
 		});
 });
 
+icarusApp.service('JWT',function($window){
+	this.parseJWT=function(token){
+  		var base64Url = token.split('.')[1];
+  		var base64 = base64Url.replace('-', '+').replace('_', '/');
+  		return (JSON.parse($window.atob(base64)));
+	};
+});
+
 icarusApp.service('AjaxService',function($http,$q,$cookies){
 	this.login=function(email,password){
 		var request = $http({
@@ -45,6 +53,40 @@ icarusApp.service('AjaxService',function($http,$q,$cookies){
 		return (request);
 	}
 
+	this.editUser=function(user,fname,lname,email){
+		var request = $http({
+			method: 'PUT',
+			url: "http://www.rugatech.com/se2/api/user/"+user,
+			data: {"fname":fname,"lname":lname,"email":email},
+			headers: {
+	    	    'Authorization': 'Bearer '+$cookies.get('jwt'),
+			}
+		});
+		return (request);
+	}
+
+	this.getUserStocks=function(user){
+		var request = $http({
+			method: 'GET',
+			url: "http://www.rugatech.com/se2/api/user/"+user+"/stock",
+			headers: {
+	    	    'Authorization': 'Bearer '+$cookies.get('jwt'),
+			}
+		});
+		return (request);
+	}
+
+	this.logout=function(){
+		var request = $http({
+			method: 'GET',
+			url: "http://www.rugatech.com/se2/api/user/logout",
+			headers: {
+	    	    'Authorization': 'Bearer '+$cookies.get('jwt'),
+			}
+		});
+		return (request);
+	}
+
 })
 
 icarusApp.service('AlertModalService',function($uibModal){
@@ -59,7 +101,7 @@ icarusApp.service('AlertModalService',function($uibModal){
 	this.getMessage=function(){return this.message;}
 });
 
-icarusApp.service('CreateUserModal',function($uibModal,$q,AjaxService,AlertModalService){
+icarusApp.service('CreateUserModal',function($uibModal,AjaxService,AlertModalService){
 	this.open=function(){
 		$uibModal.open({
 			templateUrl:'partials/createUserModal.html',
@@ -70,5 +112,19 @@ icarusApp.service('CreateUserModal',function($uibModal,$q,AjaxService,AlertModal
 
 	this.save=function(fname,lname,email,password){
   		return(AjaxService.createUser(fname,lname,email,password));
+	}
+});
+
+icarusApp.service('EditUserModal',function($uibModal,AjaxService,AlertModalService){
+	this.open=function(){
+		$uibModal.open({
+			templateUrl:'partials/editUserModal.html',
+			controller:'EditUserController as euCtrl',
+			size: 'sm-400'
+		});
+	}
+
+	this.save=function(user,fname,lname,email){
+  		return(AjaxService.editUser(user,fname,lname,email));
 	}
 });

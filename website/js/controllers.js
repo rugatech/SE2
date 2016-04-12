@@ -1,12 +1,31 @@
-
-
-icarusApp.controller('MainController',function(AjaxService,AlertModalService){
+icarusApp.controller('MainController',function(AjaxService,AlertModalService,EditUserModal,$cookies,JWT){
 	var mCtrl=this;
-	mCtrl.getUser=function(user){
-  		AjaxService.getUser(user)
-  		.then(
+	var jwt=JWT.parseJWT($cookies.get('jwt'));
+	mCtrl.stocks=[];
+
+	if($cookies.get('jwt')==""||$cookies.get('jwt')==null){
+		AlertModalService.open('Authentication Token not found',"danger");
+		//window.location="#/";
+	}
+
+	AjaxService.getUserStocks(jwt['user']).then(
+		function(response){
+			mCtrl.stocks=response.data;
+		},
+		function(errmsg){
+			AlertModalService.open(errmsg.statusText,"danger");
+		}
+	);
+
+	mCtrl.editUser=function(){
+		EditUserModal.open();
+	}
+	mCtrl.logout=function(){
+		AjaxService.logout().then(
 			function(response){
-				console.log(response)
+				$cookies.put('jwt','');
+				AlertModalService.open("Logout Complete","success");
+				window.location="#/";
 			},
 			function(errmsg){
 				AlertModalService.open(errmsg.statusText,"danger");
@@ -18,8 +37,7 @@ icarusApp.controller('MainController',function(AjaxService,AlertModalService){
 icarusApp.controller('LoginController',function(AjaxService,AlertModalService,CreateUserModal,$cookies){
 	var lCtrl=this;
 	lCtrl.submitLogin=function(){
-  		AjaxService.login(lCtrl.email,lCtrl.password)
-  		.then(
+  		AjaxService.login(lCtrl.email,lCtrl.password).then(
 			function(response){
 				$cookies.put('jwt',response.data['jwt']);
 				window.location="#/main";
@@ -61,5 +79,36 @@ icarusApp.controller('CreateUserController',function($uibModalInstance,CreateUse
 				}
 			);
 		}
+	};
+});
+
+icarusApp.controller('EditUserController',function($uibModalInstance,EditUserModal,AlertModalService,JWT,$cookies,AjaxService){
+	var euCtrl=this;
+	var jwt=JWT.parseJWT($cookies.get('jwt'));
+ 	AjaxService.getUser(jwt['user']).then(
+		function(response){
+			euCtrl.fname=response.data['fname'];
+			euCtrl.lname=response.data['lname'];
+			euCtrl.email=response.data['email'];
+		},
+		function(errmsg){
+			AlertModalService.open(errmsg.statusText,"danger");
+		}
+	);
+
+	euCtrl.close=function(){
+		$uibModalInstance.dismiss('cancel');
+	};
+	euCtrl.save=function(){
+		var save=EditUserModal.save(jwt['user'],euCtrl.fname,euCtrl.lname,euCtrl.email);
+ 			save.then(
+			function(response){
+				AlertModalService.open("Profile successfully updated","success");
+				$uibModalInstance.dismiss('cancel');
+			},
+			function(errmsg){
+				AlertModalService.open(errmsg.statusText,"danger");
+			}
+		);
 	};
 });

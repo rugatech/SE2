@@ -32,6 +32,17 @@ class api
 		$app->options('/',function($request,$response,$args){
 		});
 
+		$app->get('/user/logout',function($request, $response, $args){
+			try{
+				$retval=(new datastore\datastore($_SERVER['HTTP_AUTHORIZATION']))->logout();
+				$response->write($retval);
+				return $response;
+			}
+			catch(DatastoreException $e){
+			    throw new apiException($e->getMessage(),$e->getCode());
+			}
+		});
+
 		$app->get('/user/{pkey}',function($request, $response, $args){
 			try{
 				$retval=(new datastore\datastore($_SERVER['HTTP_AUTHORIZATION']))->getUser($args['pkey']);
@@ -42,11 +53,6 @@ class api
 			    throw new apiException($e->getMessage(),$e->getCode());
 			}
 		});
-
-		//$app->post('/',function($request, $response, $args){
-		//    $response->write('Welcome to Slim POST1');
-		//    return $response;
-		//});
 
 		$app->post('/user/login',function($request, $response, $args){
 			try{
@@ -65,13 +71,10 @@ class api
 			}
 		});
 
-		$app->post('/user',function($request, $response, $args){
+		$app->get('/user/{pkey}/stock',function($request, $response, $args){
 			try{
-				$json=json_decode($request->getBody(),TRUE);
-				if(!$json){
-					throw new apiException('Malformed JSON request',5);
-				}
-				$retval=(new datastore\datastore($_SERVER['HTTP_AUTHORIZATION']))->addUser($json);
+				$retval=(new datastore\datastore($_SERVER['HTTP_AUTHORIZATION']))->getUserStock($args['pkey']);
+				$response->write(json_encode($retval));
 				return $response;
 			}
 			catch(DatastoreException $e){
@@ -79,19 +82,19 @@ class api
 			}
 		});
 
-		//$app->put('/user/{pkey}',function($request, $response, $args){
-		//	try{
-		//		$json=json_decode($request->getBody(),TRUE);
-		//		if(!$json){
-		//			throw new apiException('Malformed JSON request',5);
-		//		}
-		//		$retval=(new datastore\datastore($_SERVER['HTTP_AUTHORIZATION']))->editUser($json,$args['pkey']);
-		//		return $response;
-		//	}
-		//	catch(DatastoreException $e){
-		//	    throw new apiException($e->getMessage(),$e->getCode());
-		//	}
-		//});
+		$app->put('/user/{pkey}',function($request, $response, $args){
+			try{
+				$json=json_decode($request->getBody(),TRUE);
+				if(!$json){
+					throw new apiException('Malformed JSON request',5);
+				}
+				$retval=(new datastore\datastore($_SERVER['HTTP_AUTHORIZATION']))->editUser($json,$args['pkey']);
+				return $response;
+			}
+			catch(DatastoreException $e){
+			    throw new apiException($e->getMessage(),$e->getCode());
+			}
+		});
 
 		//$app->group('/user',function(){
 			//$this->get('/{pkey}',function ($request, $response, $args){

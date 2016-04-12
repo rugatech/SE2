@@ -59,7 +59,7 @@
             }
         },
         "/user/{pkey}": {
-			      "get": {
+            "get": {
                 "tags": [
                     "Users"
                 ],
@@ -100,6 +100,13 @@
                 ],
                 "parameters": [
                     {
+                        "name": "pkey",
+                        "in": "path",
+                        "description": "pkey for the user",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
                         "in": "body",
                         "name": "body",
                         "description": "User object that needs to be editted",
@@ -113,11 +120,53 @@
                     "200": {
                         "description": "Ok"
                     },
+                    "401": {
+                        "description": "You cannot edit this user"
+                    },
                     "405": {
                         "description": "Invalid Input"
                     },
                     "500": {
                         "description": "Unable to edit user"
+                    }
+                }
+            }
+        },
+        "/user/{pkey}/stock": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Fetch stocks tracked by a user",
+                "description": "",
+                "operationId": "fetchStocks",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "pkey",
+                        "in": "path",
+                        "description": "pkey for the user",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "400": {
+                        "description": "Invalid pkey supplied"
+                    },
+                    "401": {
+                        "description": "You cannot view this record"
+                    },
+                    "404": {
+                        "description": "User not found"
+                    },
+                    "500": {
+                        "description": "Database error"
                     }
                 }
             }
@@ -159,6 +208,27 @@
                     },
                     "500": {
                         "description": "Unable to authenicate user"
+                    }
+                }
+            }
+        },
+        "/user/logout": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Logout",
+                "description": "",
+                "operationId": "logout",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "500": {
+                        "description": "Database Error"
                     }
                 }
             }

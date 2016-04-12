@@ -14,17 +14,6 @@ div.rehs_header{font-weight:bold;font-family:arial;font-size:14pt;width:100%;tex
 #footer .container1 .container1_right{float:right;width:50%;text-align:right}
 #footer .footer_date{width:100%;padding-top:3px}
 
-#jMenuBarContainer {width:100%;background-color:#666666;}
-#jMenuBarContainer:after, #cssmenu ul:after{clear:both;content:"";display:block}
-ul#jMenuBar,ul#jMenuBar ul {list-style:none;padding:0px;margin:0px}
-ul#jMenuBar li {float: left;position: relative;width:122px;background-color:#666;border-right:1px #FFF solid}
-ul#jMenuBar li.sub{background:url('/includes/images/accordion_down_icarus.png') right no-repeat}
-ul#jMenuBar li:hover{background-color:#999!important}
-ul#jMenuBar li:hover > ul{display:block}
-ul#jMenuBar li ul li:hover{background-color:#CCC!important}
-ul#jMenuBar li a {display:block;margin:5px 5px;font-size:8pt;font-weight:bold;font-family:verdana;cursor:pointer;text-decoration:none;width:100%;color:#FFF;z-index:1}
-ul#jMenuBar li a:visited{color:#FFF}
-ul#jMenuBar li ul {position:absolute;display:none}
 
 a.addLink{cursor:pointer;color:#050;font-weight:bold}
 a.addLink img{margin-bottom:-3px;margin-right:3px}
@@ -33,21 +22,6 @@ a.addLink img{margin-bottom:-3px;margin-right:3px}
 .ginablue{background-color:#056191;color:#FFF}
 .bgcolor-primary{background-color:#C0C0FF;}.bgcolor-lightgreen{background-color:#90EE90}.bgcolor-gold{background-color:#FFD700}.bgcolor-violet{background-color:#EE82EE}.bgcolor-orange{background-color:#FFA500}.bgcolor-ginablue{background-color:#056191;color:#FFF}
 
-/* CSS Sprites */
-.sprite_add,.sprite_accept,.sprite_delete,.sprite_printer,.sprite_disk,.sprite_pencil,.sprite_email,.sprite_stop,.sprite_page_add,.sprite_error_add,
-	.sprite_clipboard{height:16px;width:16px;background-image:url("/includes/images/sprites.png");float:left;margin:0 4px}
-.sprite_add{background-position:0px 0px}
-.sprite_accept{background-position:-16px 0px}
-.sprite_delete{background-position:-32px 0px}
-.sprite_printer{background-position:-48px 0px}
-.sprite_disk{background-position:0px -16px}
-.sprite_pencil{background-position:-16px -16px}
-.sprite_email{background-position:-32px -16px}
-.sprite_stop{background-position:-48px -16px}
-.sprite_page_add{background-position:0px -32px}
-.sprite_error_add{background-position:-16px -32px}
-.sprite_clipboard{background-position:-32px -32px}
-a.spriteLink{height:16px;width:16px;cursor:pointer;display:inline-block}
 
 .icarus-panel{border:1px solid #000;-webkit-box-shadow: 0 4px 4px 0 #C2C2C2;box-shadow: 0 4px 4px 0 #C2C2C2}
 .icarus-panel{-moz-border-radius: 6px;-webkit-border-radius: 6px;	border-radius: 6px}
@@ -57,6 +31,9 @@ a.spriteLink{height:16px;width:16px;cursor:pointer;display:inline-block}
 #searchDiv{margin:0px auto;width:300px;}
 #searchDiv form .form-group label{padding-right:0px;font-size:13px;font-weight:normal}
 #searchDiv .panel-heading{text-align:center;font-size:14px}
-.results-table{margin:0px auto;width:90%;margin-top:20px}
-.results-table .panel-heading{text-align:center;font-size:14px}
+.stocks-table{margin:0px auto;width:90%;margin-top:20px}
+.stocks-table .panel-heading{text-align:center;font-size:14px}
 .modal-sm-400{width:400px}
+.mr5{margin-right:5px}
+.ml5{margin-left:5px}
+.fa-remove{cursor:pointer}

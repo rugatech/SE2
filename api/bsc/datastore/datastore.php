@@ -75,8 +75,7 @@ class datastore{
 				$token = (new Builder())->setIssuer('http://rugatech.com')
 					->setIssuedAt(time())
 					->setExpiration(time() + 86400)
-					->set('user', $person['pkey'])
-					->set('user_type',$person['user_type'])
+					->set('user', $user['pkey'])
 					->sign($signer,$this->hashKey)
 					->getToken();
 				$pstmt->execute([$user['pkey'],$token]);
@@ -106,25 +105,26 @@ class datastore{
 			$pstmt->execute([$data['fname'],$data['lname'],$data['email'],$passwd]);
 		}
 		catch(\PDOException $e){
-			throw new DatastoreException('Unable to add person',2);
+			throw new DatastoreException('Unable to add user',2);
 		}
 	}
 
-	//public function editUser($data,$pkey){
-	//	if(empty($data['fname'])){throw new DatastoreException('Invalid First Name',1);}
-	//	if(empty($data['lname'])){throw new DatastoreException('Invalid Last Name',1);}
-	//	if(empty($data['email'])){throw new DatastoreException('Invalid E-Mail Address',1);}
-	//	if (filter_var($data['email'], FILTER_VALIDATE_EMAIL) === false){throw new DatastoreException('Invalid E-Mail Address',1);}
-	//	$this->__authenticateUser();
-	//	$data=$this->_sanitize($data);
-	//	$pstmt=$this->db->prepare('UPDATE users SET fname=?,lname=?,email=? WHERE pkey=?)');
-	//	try{
-	//		$pstmt->execute([$data['fname'],$data['lname'],$data['email'],$pkey]);
-	//	}
-	//	catch(\PDOException $e){
-	//		throw new DatastoreException('Unable to add person',2);
-	//	}
-	//}
+	public function editUser($data,$pkey){
+		if(empty($data['fname'])){throw new DatastoreException('Invalid First Name',1);}
+		if(empty($data['lname'])){throw new DatastoreException('Invalid Last Name',1);}
+		if(empty($data['email'])){throw new DatastoreException('Invalid E-Mail Address',1);}
+		if (filter_var($data['email'], FILTER_VALIDATE_EMAIL) === false){throw new DatastoreException('Invalid E-Mail Address',1);}
+		$this->__authenticateUser();
+		if($this->authenticatedUser['pkey']!=$pkey){throw new DatastoreException('You cannot edit this user',3);}
+		$data=$this->_sanitize($data);
+		$pstmt=$this->db->prepare('UPDATE users SET fname=?,lname=?,email=? WHERE pkey=?');
+		try{
+			$pstmt->execute([$data['fname'],$data['lname'],$data['email'],$pkey]);
+		}
+		catch(\PDOException $e){
+			throw new DatastoreException('Unable to update user',2);
+		}
+	}
 
 	public function getUser($pkey){
 		if(!is_numeric($pkey)){throw new DatastoreException('Invalid ID supplied',5);}
@@ -142,4 +142,37 @@ class datastore{
 			throw new DatastoreException('Database Error',2);
 		}
 	}
+
+	public function getUserStock($user){
+		if(!is_numeric($user)){throw new DatastoreException('Invalid ID supplied',5);}
+		try{
+			$this->__authenticateUser();
+			if($this->authenticatedUser['pkey']!=$user){throw new DatastoreException('You cannot view this record',3);}
+			$pstmt=$this->db->prepare('SELECT stock FROM stock WHERE `user`=?');
+			$pstmt->execute([$user]);
+			if($pstmt->rowCount()>0){
+				while($rs=$pstmt->fetch(\PDO::FETCH_ASSOC)){
+					$retval[]=['stock'=>$rs['stock']];
+				}
+				return($retval);
+			}
+			else{throw new DatastoreException('User not found',1);}
+		}
+		catch(\PDOException $e){
+			throw new DatastoreException('Database Error',2);
+		}
+	}
+
+	public function logout(){
+		try{
+			$this->__authenticateUser();
+			$pstmt=$this->db->prepare('DELETE FROM session WHERE sessid=?');
+			$pstmt->execute([$this->jwt]);
+			return ('{"logout":1}');
+		}
+		catch(\PDOException $e){
+			throw new DatastoreException('Database Error',2);
+		}
+	}
+
 }
