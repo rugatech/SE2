@@ -28,6 +28,19 @@ a.addLink img{margin-bottom:-3px;margin-right:3px}
 .icarus-panel .icarus-panel-header{-moz-border-radius: 6px 6px 0px 0px;-webkit-border-radius: 6px 6px 0px 0px;border-radius: 6px 6px 0px 0px;text-align:center;font-size:12px;font-weight:bold;padding:6px;font-family:Verdana,Hevetica,sans-serif}
 .icarus-panel .icarus-panel-body{padding:6px;font-size:12px;}
 
+.roundTable,.roundTable_flatBottom{border:1px solid #000;-webkit-box-shadow: 0 4px 4px 0 #C2C2C2;box-shadow: 0 4px 4px 0 #C2C2C2}
+.roundTable{-moz-border-radius: 6px;-webkit-border-radius: 6px;	border-radius: 6px}
+.roundTable_flatBottom{-moz-border-radius: 6px 6px 0px 0px;-webkit-border-radius: 6px 6px 0px 0px;border-radius: 6px 6px 0px 0px}	
+.roundTable .rtHeader,.roundTable_flatBottom .rtHeader{background-color:lightgreen;-moz-border-radius: 6px 6px 0px 0px;-webkit-border-radius: 6px 6px 0px 0px;border-radius: 6px 6px 0px 0px;text-align:center;font-size:12px;font-weight:bold;padding:6px;font-family:Verdana,Hevetica,sans-serif}
+.roundTable .rtBody,.roundTable_flatBottom .rtBody{padding-top:5px;font-size:12px;padding-bottom:5px}
+.roundTable_flatBottom .rtBody{background-color:#FFF}
+table.primary,table.primary_highlight,table.primary_largeFont{border:1px solid;border-color:#000000;border-collapse:collapse;background-color:#FFFFFF}
+table.primary td,table.primary_highlight td,table.primary_largeFont tr td{padding:3px}
+table.primary_largeFont td{font-size:11pt}
+table.primary_highlight tr td{padding:3px}
+table.primary_highlight tbody tr:hover{background-color:#CCCCCC} 
+.sub_header{text-decoration:underline;font-weight:bold;color:#000000;text-align:center}
+
 #searchDiv{margin:0px auto;width:300px;}
 #searchDiv form .form-group label{padding-right:0px;font-size:13px;font-weight:normal}
 #searchDiv .panel-heading{text-align:center;font-size:14px}
