@@ -34,11 +34,11 @@ class datastore{
 			$token = (new Parser())->parse((string)$this->jwt);
 			$signer=new Sha256();
 			if(!$token->verify($signer, $this->hashKey)){throw new DatastoreException('Unable to verify JWT token',3);}
-			$person=$token->getClaim('user');
+			$user=$token->getClaim('user');
 			$expire=$token->getClaim('exp');
 			if($expire>(time()+86400)){throw new DatastoreException('Token has expired',3);}
-			$pstmt=$this->db->prepare('SELECT users.* FROM session INNER JOIN users ON users.pkey=session.user WHERE sessid=?');
-			$pstmt->execute([$this->jwt]);
+			$pstmt=$this->db->prepare('SELECT * FROM users WHERE pkey=?');
+			$pstmt->execute([$user]);
 			if($pstmt->rowCount()>0){
 				$rs=$pstmt->fetch(\PDO::FETCH_ASSOC);
 				$this->authenticatedUser=$rs;
@@ -68,7 +68,7 @@ class datastore{
 			}
 			else{
 				unset($pstmt);
-				$pstmt=$this->db->prepare('INSERT INTO session (user,sessid) VALUES (?,?)');
+				$pstmt=$this->db->prepare('INSERT INTO login_history (user) VALUES (?)');
 				$ts=date('Y-m-d H:i:s');
 				$expire=date('Y-m-d H:i:s',mktime(date('H')+24,date('i'),date('s'),date('m'),date('d'),date('Y')));
 				$signer = new Sha256();
@@ -78,7 +78,7 @@ class datastore{
 					->set('user', $user['pkey'])
 					->sign($signer,$this->hashKey)
 					->getToken();
-				$pstmt->execute([$user['pkey'],$token]);
+				$pstmt->execute([$user['pkey']]);
 				return $token;
 			}
 		}
