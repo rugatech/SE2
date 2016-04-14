@@ -57,7 +57,7 @@ icarusApp.service('AjaxService',function($http,$q,$cookies){
 		var request = $http({
 			method: 'PUT',
 			url: "http://www.rugatech.com/se2/api/user/"+user,
-			data: {"fname":fname,"lname":lname,"email":email},
+			
 			headers: {
 	    	    'Authorization': 'Bearer '+$cookies.get('jwt'),
 			}
@@ -69,6 +69,29 @@ icarusApp.service('AjaxService',function($http,$q,$cookies){
 		var request = $http({
 			method: 'GET',
 			url: "http://www.rugatech.com/se2/api/user/"+user+"/stock",
+			headers: {
+	    	    'Authorization': 'Bearer '+$cookies.get('jwt'),
+			}
+		});
+		return (request);
+	}
+
+	this.deleteStock=function(user,stock){
+		var request = $http({
+			method: 'DELETE',
+			url: "http://www.rugatech.com/se2/api/user/"+user+"/stock/"+stock,
+			headers: {
+	    	    'Authorization': 'Bearer '+$cookies.get('jwt'),
+			}
+		});
+		return (request);
+	}
+
+	this.addStock=function(user,stock){
+		var request = $http({
+			method: 'POST',
+			url: "http://www.rugatech.com/se2/api/user/"+user+"/stock",
+			data: {"stock":stock},
 			headers: {
 	    	    'Authorization': 'Bearer '+$cookies.get('jwt'),
 			}
@@ -88,6 +111,25 @@ icarusApp.service('AjaxService',function($http,$q,$cookies){
 	}
 
 })
+
+icarusApp.service("MyStockList",function(AjaxService,AlertModalService){
+	var stockList;
+
+	var addStockData=function(data){
+		stockList=data;
+	};
+	var deleteStock=function(i){
+		stockList.splice(i,1);
+	};
+	var addStock=function(stock){
+		stockList.push(stock);
+	};
+	return{
+		addStockData: addStockData,
+		deleteStock: deleteStock,
+		addStock: addStock
+	}
+});
 
 icarusApp.service('AlertModalService',function($uibModal){
 	this.message="";
@@ -126,5 +168,19 @@ icarusApp.service('EditUserModal',function($uibModal,AjaxService,AlertModalServi
 
 	this.save=function(user,fname,lname,email){
   		return(AjaxService.editUser(user,fname,lname,email));
+	}
+});
+
+icarusApp.service('AddStockModal',function($uibModal,AjaxService,AlertModalService){
+	this.open=function(){
+		$uibModal.open({
+			templateUrl:'partials/addStockModal.html',
+			controller:'AddStockController as asCtrl',
+			size: 'sm-400'
+		});
+	}
+
+	this.save=function(user,stock){
+  		return(AjaxService.addStock(user,stock));
 	}
 });

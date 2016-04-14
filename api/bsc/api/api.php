@@ -54,6 +54,21 @@ class api
 			}
 		});
 
+		$app->post('/user',function($request, $response, $args){
+			try{
+				$json=json_decode($request->getBody(),TRUE);
+				if(!$json){
+					throw new apiException('Malformed JSON request',5);
+				}
+				$retval=(new datastore\datastore($_SERVER['HTTP_AUTHORIZATION']))->addUser($json);
+				$response->write($retval);
+				return $response;
+			}
+			catch(DatastoreException $e){
+			    throw new apiException($e->getMessage(),$e->getCode());
+			}
+		});
+
 		$app->post('/user/login',function($request, $response, $args){
 			try{
 				$json=json_decode($request->getBody(),TRUE);
@@ -63,17 +78,6 @@ class api
 				$token=(new datastore\datastore($_SERVER['HTTP_AUTHORIZATION']))->login($json);
 				unset($retval);
 				$retval['jwt']=(string)$token;
-				$response->write(json_encode($retval));
-				return $response;
-			}
-			catch(DatastoreException $e){
-			    throw new apiException($e->getMessage(),$e->getCode());
-			}
-		});
-
-		$app->get('/user/{pkey}/stock',function($request, $response, $args){
-			try{
-				$retval=(new datastore\datastore($_SERVER['HTTP_AUTHORIZATION']))->getUserStock($args['pkey']);
 				$response->write(json_encode($retval));
 				return $response;
 			}
@@ -95,6 +99,44 @@ class api
 			    throw new apiException($e->getMessage(),$e->getCode());
 			}
 		});
+
+		$app->get('/user/{pkey}/stock',function($request, $response, $args){
+			try{
+				$retval=(new datastore\datastore($_SERVER['HTTP_AUTHORIZATION']))->getUserStock($args['pkey']);
+				$response->write(json_encode($retval));
+				return $response;
+			}
+			catch(DatastoreException $e){
+			    throw new apiException($e->getMessage(),$e->getCode());
+			}
+		});
+
+		$app->delete('/user/{pkey}/stock/{stock}',function($request, $response, $args){
+			try{
+				$retval=(new datastore\datastore($_SERVER['HTTP_AUTHORIZATION']))->deleteStock($args['pkey'],$args['stock']);
+				$response->write(json_encode($retval));
+				return $response;
+			}
+			catch(DatastoreException $e){
+			    throw new apiException($e->getMessage(),$e->getCode());
+			}
+		});
+
+		$app->post('/user/{pkey}/stock',function($request, $response, $args){
+			try{
+				$json=json_decode($request->getBody(),TRUE);
+				if(!$json){
+					throw new apiException('Malformed JSON request',5);
+				}
+				$retval=(new datastore\datastore($_SERVER['HTTP_AUTHORIZATION']))->addStock($args['pkey'],$json['stock']);
+				$response->write(json_encode($retval));
+				return $response;
+			}
+			catch(DatastoreException $e){
+			    throw new apiException($e->getMessage(),$e->getCode());
+			}
+		});
+
 
 		//$app->group('/user',function(){
 			//$this->get('/{pkey}',function ($request, $response, $args){

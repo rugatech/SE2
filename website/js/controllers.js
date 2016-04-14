@@ -1,16 +1,17 @@
-icarusApp.controller('MainController',function(AjaxService,AlertModalService,EditUserModal,$cookies,JWT){
+icarusApp.controller('MainController',function(AjaxService,AlertModalService,EditUserModal,AddStockModal,$cookies,JWT,MyStockList){
 	var mCtrl=this;
 	var jwt=JWT.parseJWT($cookies.get('jwt'));
 	mCtrl.stocks=[];
 
 	if($cookies.get('jwt')==""||$cookies.get('jwt')==null){
 		AlertModalService.open('Authentication Token not found',"danger");
-		//window.location="#/";
+		window.location="#/";
 	}
 
 	AjaxService.getUserStocks(jwt['user']).then(
 		function(response){
 			mCtrl.stocks=response.data;
+			MyStockList.addStockData(mCtrl.stocks);
 		},
 		function(errmsg){
 			AlertModalService.open(errmsg.statusText,"danger");
@@ -20,6 +21,23 @@ icarusApp.controller('MainController',function(AjaxService,AlertModalService,Edi
 	mCtrl.editUser=function(){
 		EditUserModal.open();
 	}
+	
+	mCtrl.addStock=function(){
+		AddStockModal.open();
+	}
+
+	mCtrl.deleteStock=function(stock,i){
+		AjaxService.deleteStock(jwt['user'],stock).then(
+			function(response){
+				MyStockList.deleteStock(i);
+				AlertModalService.open("Stock Deleted","success");
+			},
+			function(errmsg){
+				AlertModalService.open(errmsg.statusText,"danger");
+			}
+		)
+	}
+
 	mCtrl.logout=function(){
 		AjaxService.logout().then(
 			function(response){
@@ -104,6 +122,28 @@ icarusApp.controller('EditUserController',function($uibModalInstance,EditUserMod
  			save.then(
 			function(response){
 				AlertModalService.open("Profile successfully updated","success");
+				$uibModalInstance.dismiss('cancel');
+			},
+			function(errmsg){
+				AlertModalService.open(errmsg.statusText,"danger");
+			}
+		);
+	};
+});
+
+icarusApp.controller('AddStockController',function($uibModalInstance,AddStockModal,AlertModalService,JWT,$cookies,AjaxService,MyStockList){
+	var asCtrl=this;
+	var jwt=JWT.parseJWT($cookies.get('jwt'));
+
+	asCtrl.close=function(){
+		$uibModalInstance.dismiss('cancel');
+	};
+	asCtrl.save=function(){
+		var save=AddStockModal.save(jwt['user'],asCtrl.stock);
+ 			save.then(
+			function(response){
+				AlertModalService.open("Stock successfully added","success");
+				MyStockList.addStock({"stock":asCtrl.stock});
 				$uibModalInstance.dismiss('cancel');
 			},
 			function(errmsg){

@@ -103,6 +103,8 @@ class datastore{
 			];
 			$passwd=password_hash($data['password'], PASSWORD_BCRYPT, $options);
 			$pstmt->execute([$data['fname'],$data['lname'],$data['email'],$passwd]);
+			$new_pkey=$this->db->lastInsertId();
+			return('{"pkey":'.$new_pkey.'}');
 		}
 		catch(\PDOException $e){
 			throw new DatastoreException('Unable to add user',2);
@@ -147,16 +149,42 @@ class datastore{
 		if(!is_numeric($user)){throw new DatastoreException('Invalid ID supplied',5);}
 		try{
 			$this->__authenticateUser();
+			$retval=[];
 			if($this->authenticatedUser['pkey']!=$user){throw new DatastoreException('You cannot view this record',3);}
 			$pstmt=$this->db->prepare('SELECT stock FROM stock WHERE `user`=?');
 			$pstmt->execute([$user]);
-			if($pstmt->rowCount()>0){
-				while($rs=$pstmt->fetch(\PDO::FETCH_ASSOC)){
-					$retval[]=['stock'=>$rs['stock']];
-				}
-				return($retval);
+			while($rs=$pstmt->fetch(\PDO::FETCH_ASSOC)){
+				$retval[]=['stock'=>$rs['stock']];
 			}
-			else{throw new DatastoreException('User not found',1);}
+			return($retval);
+		}
+		catch(\PDOException $e){
+			throw new DatastoreException('Database Error',2);
+		}
+	}
+
+	public function deleteStock($user,$stock){
+		if(!is_numeric($user)){throw new DatastoreException('Invalid User pkey supplied',5);}
+		try{
+			$this->__authenticateUser();
+			if($this->authenticatedUser['pkey']!=$user){throw new DatastoreException('You cannot delete this record',3);}
+			$pstmt=$this->db->prepare('DELETE FROM stock WHERE `user`=? AND stock=?');
+			$pstmt->execute([$user,$stock]);
+			return(["results"=>1]);
+		}
+		catch(\PDOException $e){
+			throw new DatastoreException('Database Error',2);
+		}
+	}
+
+	public function addStock($user,$stock){
+		if(!is_numeric($user)){throw new DatastoreException('Invalid User pkey supplied',5);}
+		try{
+			$this->__authenticateUser();
+			if($this->authenticatedUser['pkey']!=$user){throw new DatastoreException('You cannot add this record',3);}
+			$pstmt=$this->db->prepare('INSERT INTO stock(`user`,stock) VALUES (?,?)');
+			$pstmt->execute([$user,$stock]);
+			return(["results"=>1]);
 		}
 		catch(\PDOException $e){
 			throw new DatastoreException('Database Error',2);

@@ -1,0 +1,17 @@
+<div id="createUserModal" role="dialog">
+	<div class="modal-header"><h4 class="modal-title">Add Stock to your list</h4></div>
+	<div class="modal-body" style="font-size:12px">
+   		<form class="form-horizontal" role="form">
+   	    	<div class="form-group">
+       	    	<label for="netid" class="control-label col-xs-4">Stock Symbol</label>
+          		<div class="col-xs-8">
+	                <input type="text" class="form-control input-sm" id="as_stock" data-ng-model="asCtrl.stock">
+          		</div>
+      		</div>
+   		</form>
+   	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-sm btn-info" data-ng-click="asCtrl.save()">Save</button>
+		<button type="button" class="btn btn-sm btn-info" data-ng-click="asCtrl.close()">Cancel</button>
+	</div>
+</div>

@@ -162,8 +162,86 @@
                     "401": {
                         "description": "You cannot view this record"
                     },
-                    "404": {
-                        "description": "User not found"
+                    "500": {
+                        "description": "Database error"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Add a user tracked stock",
+                "description": "",
+                "operationId": "addStock",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "pkey",
+                        "in": "path",
+                        "description": "pkey for the user",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "Log into the website",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/AddStock"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "401": {
+                        "description": "You cannot view add record"
+                    },
+                    "500": {
+                        "description": "Database error"
+                    }
+                }
+            }
+        },
+
+        "/user/{pkey}/stock/{stock}":{
+            "delete": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Delete a user tracked stock",
+                "description": "",
+                "operationId": "deleteStock",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "pkey",
+                        "in": "path",
+                        "description": "pkey for the user",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "stock",
+                        "in": "path",
+                        "description": "stock symbol",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "401": {
+                        "description": "You cannot delete this record"
                     },
                     "500": {
                         "description": "Database error"
@@ -273,6 +351,14 @@
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "AddStock": {
+            "type": "object",
+            "properties": {
+                "stock": {
                     "type": "string"
                 }
             }
