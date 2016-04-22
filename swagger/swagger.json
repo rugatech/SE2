@@ -17,9 +17,46 @@
         {
             "name": "Users",
             "description": "Everything about users"
+        },
+        {
+            "name": "Stocks",
+            "description": "Everything about stocks"
         }
     ],
     "paths": {
+        "/stock/{stock}":{
+        	"get":{
+        		"tags": [
+        			"Stocks"
+        		],
+        		"summary":"Download the closing price of a stock for each price for the past year from Yahoo",
+        		"description":"",
+        		"operationId":"getYahooStock",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "stock",
+                        "in": "path",
+                        "description": "stock symbol",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "500": {
+                        "description": "Invalid stock symbol"
+                    }
+                }
+        	}
+        },
         "/user": {
             "post": {
                 "tags": [
@@ -203,7 +240,7 @@
                         "description": "You cannot view add record"
                     },
                     "500": {
-                        "description": "Database error"
+                        "description": "Database error OR Invalid stock symbol"
                     }
                 }
             }

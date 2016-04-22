@@ -57,7 +57,7 @@ icarusApp.service('AjaxService',function($http,$q,$cookies){
 		var request = $http({
 			method: 'PUT',
 			url: "http://www.rugatech.com/se2/api/user/"+user,
-			
+
 			headers: {
 	    	    'Authorization': 'Bearer '+$cookies.get('jwt'),
 			}
@@ -92,6 +92,17 @@ icarusApp.service('AjaxService',function($http,$q,$cookies){
 			method: 'POST',
 			url: "http://www.rugatech.com/se2/api/user/"+user+"/stock",
 			data: {"stock":stock},
+			headers: {
+	    	    'Authorization': 'Bearer '+$cookies.get('jwt'),
+			}
+		});
+		return (request);
+	}
+
+	this.downloadStock=function(stock){
+		var request = $http({
+			method: 'GET',
+			url: "http://www.rugatech.com/se2/api/stock/"+stock,
 			headers: {
 	    	    'Authorization': 'Bearer '+$cookies.get('jwt'),
 			}

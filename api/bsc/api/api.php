@@ -137,8 +137,18 @@ class api
 			}
 		});
 
+		$app->get('/stock/{stock}',function($request, $response, $args){
+			try{
+				$retval=(new datastore\datastore($_SERVER['HTTP_AUTHORIZATION']))->downloadStock($args['stock']);
+				$response->write(json_encode($retval,JSON_NUMERIC_CHECK));
+				return $response;
+			}
+			catch(DatastoreException $e){
+			    throw new apiException($e->getMessage(),$e->getCode());
+			}
 
-		//$app->group('/user',function(){
+		});
+		//$app->group('/user'
 			//$this->get('/{pkey}',function ($request, $response, $args){
 			//	print_r($args);
 				//try{

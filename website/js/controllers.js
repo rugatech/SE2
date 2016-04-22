@@ -1,7 +1,11 @@
+google.charts.load('current', {'packages':['annotationchart']});
+
 icarusApp.controller('MainController',function(AjaxService,AlertModalService,EditUserModal,AddStockModal,$cookies,JWT,MyStockList){
 	var mCtrl=this;
 	var jwt=JWT.parseJWT($cookies.get('jwt'));
 	mCtrl.stocks=[];
+	mCtrl.preloadDiv=false;
+	mCtrl.chartTitle='';
 
 	if($cookies.get('jwt')==""||$cookies.get('jwt')==null){
 		AlertModalService.open('Authentication Token not found',"danger");
@@ -21,7 +25,7 @@ icarusApp.controller('MainController',function(AjaxService,AlertModalService,Edi
 	mCtrl.editUser=function(){
 		EditUserModal.open();
 	}
-	
+
 	mCtrl.addStock=function(){
 		AddStockModal.open();
 	}
@@ -33,6 +37,35 @@ icarusApp.controller('MainController',function(AjaxService,AlertModalService,Edi
 				AlertModalService.open("Stock Deleted","success");
 			},
 			function(errmsg){
+				AlertModalService.open(errmsg.statusText,"danger");
+			}
+		)
+	}
+
+	mCtrl.downloadStock=function(stock){
+		mCtrl.preloadDiv=true;
+		AjaxService.downloadStock(stock).then(
+			function(response){
+				mCtrl.preloadDiv=false;
+				mCtrl.chartTitle=response.data['title'];
+				google.charts.setOnLoadCallback(drawChart);
+				function drawChart() {
+					var m=response.data['data'].length, d="", dataRows=[];
+					var data = new google.visualization.DataTable();
+					for(var i=0;i<m;i++){
+						d=response.data['data'][i][1].split("-");
+						dataRows.push([new Date(d[0],d[1],d[2]),response.data['data'][i][2]]);
+					};
+					data.addColumn('date', 'Date');
+					data.addColumn('number', 'Closing Price');
+					data.addRows(dataRows);
+					var chart = new google.visualization.AnnotationChart(document.getElementById('chart_div'));
+					var options = {displayAnnotations: true};
+		        	chart.draw(data, options);
+				}
+			},
+			function(errmsg){
+				mCtrl.preloadDiv=false;
 				AlertModalService.open(errmsg.statusText,"danger");
 			}
 		)
@@ -143,7 +176,7 @@ icarusApp.controller('AddStockController',function($uibModalInstance,AddStockMod
  			save.then(
 			function(response){
 				AlertModalService.open("Stock successfully added","success");
-				MyStockList.addStock({"stock":asCtrl.stock});
+				MyStockList.addStock({"stock":response.data["symbol"],"stock_name":response.data["stock_name"]});
 				$uibModalInstance.dismiss('cancel');
 			},
 			function(errmsg){

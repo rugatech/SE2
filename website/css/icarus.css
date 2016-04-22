@@ -49,4 +49,6 @@ table.primary_highlight tbody tr:hover{background-color:#CCCCCC}
 .modal-sm-400{width:400px}
 .mr5{margin-right:5px}
 .ml5{margin-left:5px}
-.fa-remove{cursor:pointer}
+.fa{cursor:pointer}
+#preload_div{width:100%;text-align:center;margin-top:15px}
+.chartTitle{width:100%;text-align:center;margin-top:15px;font-size:16px;font-weight:bold}

@@ -48,6 +48,59 @@ class datastore{
 		catch(\Exception $e){throw new DatastoreException('ERROR, unable to authenication user',2);}
 	}
 
+	protected function __getYahooStockName($stock){
+		$url='http://finance.yahoo.com/d/quotes.csv?s='.$stock.'&f=n';
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:44.0) Gecko/20100101 Firefox/44.0');
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		$data = curl_exec($ch);
+		$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+		if(($httpcode>=200 && $httpcode<300)&&substr($data,0,3)!='N/A'){
+			return(substr($data,1,-2));
+		}
+		else{return(FALSE);}
+	}
+
+	protected function __getYahooStock($stock){
+		##The URL for querying the Yahoo! Finance API
+		##Yahoo Query Language (YQL) is used in the GET request for this URL.
+		$url='http://ichart.finance.yahoo.com/table.csv?s='.$stock.'&a=04&b=14&c=2015&d='.date('m').'&e='.date('d').'&f='.date('Y');
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:44.0) Gecko/20100101 Firefox/44.0');
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		$data = curl_exec($ch);
+		$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+		if($httpcode>=200 && $httpcode<300){
+			$pstmt=$this->db->prepare('DELETE FROM historical WHERE `symbol`=?');
+			$pstmt->execute([$stock]);
+			$pstmt2=$this->db->prepare('INSERT INTO historical (symbol,datee,close_price) VALUES (?,?,?)');
+			$pstmt3=$this->db->prepare('SELECT stock_name FROM stock WHERE stock=? LIMIT 1');
+			$pstmt3->execute([$stock]);
+			$title=$pstmt3->fetch(\PDO::FETCH_ASSOC);
+			$lines=explode("\n",$data);
+			$m=count($lines);
+			$retval=['title'=>$title['stock_name'],'data'=>[]];
+			for($i=1;$i<$m-1;$i++){
+				$cell=explode(',',$lines[$i]);
+				$retval['data'][]=[strtoupper($stock),$cell[0],$cell[4]];
+				$pstmt2->execute([$stock,$cell[0],$cell[4]]);
+			}
+			return($retval);
+		}
+		else{return(FALSE);}
+	}
+
 	public function _sanitize($data){
 		foreach($data as $key=>$val){
 			$data[$key]=filter_var($val,FILTER_SANITIZE_STRING);
@@ -151,10 +204,10 @@ class datastore{
 			$this->__authenticateUser();
 			$retval=[];
 			if($this->authenticatedUser['pkey']!=$user){throw new DatastoreException('You cannot view this record',3);}
-			$pstmt=$this->db->prepare('SELECT stock FROM stock WHERE `user`=?');
+			$pstmt=$this->db->prepare('SELECT stock,stock_name FROM stock WHERE `user`=?');
 			$pstmt->execute([$user]);
 			while($rs=$pstmt->fetch(\PDO::FETCH_ASSOC)){
-				$retval[]=['stock'=>$rs['stock']];
+				$retval[]=['stock'=>$rs['stock'],'stock_name'=>$rs['stock_name']];
 			}
 			return($retval);
 		}
@@ -182,9 +235,32 @@ class datastore{
 		try{
 			$this->__authenticateUser();
 			if($this->authenticatedUser['pkey']!=$user){throw new DatastoreException('You cannot add this record',3);}
-			$pstmt=$this->db->prepare('INSERT INTO stock(`user`,stock) VALUES (?,?)');
-			$pstmt->execute([$user,$stock]);
-			return(["results"=>1]);
+			$stockName=$this->__getYahooStockName($stock);
+			if(!$stockName){
+				throw new DatastoreException('Invalid stock symbol',2);
+			}
+			else{
+				$stockName=trim($stockName);
+				$pstmt=$this->db->prepare('INSERT INTO stock(`user`,stock,stock_name) VALUES (?,?,?)');
+				$pstmt->execute([$user,$stock,$stockName]);
+				return(['symbol'=>$stock,'stock_name'=>$stockName]);
+			}
+		}
+		catch(\PDOException $e){
+			throw new DatastoreException('Database Error',2);
+		}
+	}
+
+	public function downloadStock($stock){
+		try{
+			$this->__authenticateUser();
+			$retval=$this->__getYahooStock($stock);
+			if(!$retval){
+				throw new DatastoreException('Invalid stock symbol',2);
+			}
+			else{
+				return($retval);
+			}
 		}
 		catch(\PDOException $e){
 			throw new DatastoreException('Database Error',2);
@@ -202,5 +278,4 @@ class datastore{
 			throw new DatastoreException('Database Error',2);
 		}
 	}
-
 }
