@@ -1,10 +1,10 @@
 <?php
-
 namespace bsc\api;
 
 use bsc\api\APIException;
 use bsc\datastore\DatastoreException;
 use bsc\datastore;
+use bsc\model;
 
 class api
 {
@@ -139,56 +139,29 @@ class api
 
 		$app->get('/stock/{stock}',function($request, $response, $args){
 			try{
-				$retval=(new datastore\datastore($_SERVER['HTTP_AUTHORIZATION']))->downloadStock($args['stock']);
+				$retval=[];
+				$retval['historical']=(new datastore\datastore($_SERVER['HTTP_AUTHORIZATION']))->downloadStock($args['stock']);
+				$baynes=new model\baynes($args['stock']);
+				$retval['forecast']=$baynes->forecast;
 				$response->write(json_encode($retval,JSON_NUMERIC_CHECK));
 				return $response;
 			}
 			catch(DatastoreException $e){
 			    throw new apiException($e->getMessage(),$e->getCode());
 			}
-
 		});
-		//$app->group('/user'
-			//$this->get('/{pkey}',function ($request, $response, $args){
-			//	print_r($args);
-				//try{
-				//	$retval=(new routes\people($_SERVER['HTTP_AUTHORIZATION']))->getPersonById($args['pkey']);
-				//	$response->write($retval);
-				//	return $response;
-				//}
-			    //catch(DatastoreException $e){
-			    //	throw new apiException($e->getMessage(),$e->getCode());
-			    //}
-			//});
-			//$this->map(['POST'],'',function ($request, $response, $args){
-				//try{
-				//	$json=json_decode($request->getBody(),TRUE);
-				//	if(!$json){
-				//		throw new apiException('Malformed JSON request',5);
-				//	}
-				//	print_r($json);exit;
-				//	//$retval=new datastore->addUser($json);
-					//$response->write($retval);
-					//return $response;
-				//}
-			    //catch(DatastoreException $e){
-			    //	throw new apiException($e->getMessage(),$e->getCode());
-			    //}
-			//});
-			//$this->put('/{pkey}', function ($request, $response, $args){
-			//	try{
-			//		$json=json_decode($request->getBody(),TRUE);
-			//		if(!$json){
-			//			throw new apiException('Malformed JSON request',5);
-			//		}
-			//		$retval=(new routes\cabinet($_SERVER['HTTP_AUTHORIZATION']))->addEditCabinet($json,$args['pkey'],'Edit');
-			//		return $response;
-			//	}
-			//	catch(DatastoreException $e){
-			//		throw new apiException($e->getMessage(),$e->getCode());
-			//	}
-			//});
-		//});
+
+		$app->get('/stock/historical/{stock}',function($request, $response, $args){
+			try{
+				$retval=(new datastore\datastore(''))->getHistoricalStock($args['stock']);
+				$response->write(json_encode($retval,JSON_NUMERIC_CHECK));
+				return $response;
+			}
+			catch(DatastoreException $e){
+			    throw new apiException($e->getMessage(),$e->getCode());
+			}
+		});
+
 		unset($app->getContainer()['errorHandler']);
 		$app->run();
 	}

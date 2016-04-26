@@ -70,7 +70,8 @@ class datastore{
 	protected function __getYahooStock($stock){
 		##The URL for querying the Yahoo! Finance API
 		##Yahoo Query Language (YQL) is used in the GET request for this URL.
-		$url='http://ichart.finance.yahoo.com/table.csv?s='.$stock.'&a=04&b=14&c=2015&d='.date('m').'&e='.date('d').'&f='.date('Y');
+		$m=date('m');$d=date('d');$y=date('Y');
+		$url='http://ichart.finance.yahoo.com/table.csv?s='.$stock.'&a='.($m-1).'&b='.$d.'&c='.($y-1).'&d='.$m.'&e='.$d.'&f='.$y;
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:44.0) Gecko/20100101 Firefox/44.0');
@@ -265,6 +266,30 @@ class datastore{
 		catch(\PDOException $e){
 			throw new DatastoreException('Database Error',2);
 		}
+	}
+
+	public function getHistoricalStock($stock){
+		try{
+			$pstmt=$this->db->prepare('SELECT datee,close_price FROM `historical` WHERE symbol=? ORDER BY datee');
+			$pstmt->execute([$stock]);
+			if($pstmt->rowCount()<1){
+				throw new DatastoreException('No historical data found for this stock',2);
+			}
+			else{
+				$retval=[];
+				while($rs=$pstmt->fetch(\PDO::FETCH_ASSOC)){
+					$retval[]=$rs;
+				}
+				return($retval);
+			}
+		}
+		catch(\PDOException $e){
+			throw new DatastoreException('Database Error',2);
+		}
+	}
+
+	public function test($stock){
+		echo $stock;
 	}
 
 	public function logout(){

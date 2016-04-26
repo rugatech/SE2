@@ -5,37 +5,84 @@ define('LEARNING_RATE',2.0);
 define('TARGET_ERROR',0.0002);
 define('MOMENTUM',0);
 
-//$db=new pdodb('se2');
-//$stmt=$db->query('SELECT close_price FROM historical WHERE symbol="C" LIMIT 50');
-//$a=$stmt->rowCount()-1;
-//$i=0;
-//while($rs=$stmt->fetch(PDO::FETCH_ASSOC)){
-//	if($i!=$a){$data[]=$rs['close_price'];}
-//	else{$real_target=$rs['close_price'];}
-//	$i++;
-//}
 //Calculates the Sigmoid
 function sigmoid($in){
 	return((1/(1+exp(-1*$in))));
 }
 
-//Generate Random numbers
 function rng(){
 	return mt_rand(-1000,1000)/1000;
 }
 
-//Training Data set
-$data=[
-	[0.01,0.5460,0.05424],
-	[0.02,0.5424,0.5467],
-	[0.03,0.5467,0.5533],
-	[0.04,0.5533,0.05489],
-	[0.05,0.05489,0.5484],
-	[0.06,0.5484,0.5497],
-	[0.07,0.5497,0.05424],
-	[0.08,0.05424,0.5487],
-	[0.09,0.5487,0.5455],
-];
+class data
+{
+	public $raw_data=[];
+	public $mean=[];
+	public $variance=[];
+
+	public function calc_average($arr){
+    	if (!count($arr)) return 0;
+    	$sum = 0;
+    	for ($i = 0; $i < count($arr); $i++){
+    	    $sum += $arr[$i];
+    	}
+    	return $sum / count($arr);
+	}
+
+	public function calc_variance($arr){
+	    if (!count($arr)) return 0;
+	    $mean = $this->calc_average($arr);
+	    $sos = 0;    // Sum of squares
+	    for ($i = 0; $i < count($arr); $i++){
+	        $sos += ($arr[$i] - $mean) * ($arr[$i] - $mean);
+	    }
+	    $v=($sos / (count($arr)-1));
+	    return ['mean'=>$mean,'variance'=>$v];
+	}
+
+	public function normalize(){
+		$n=[];
+		foreach($this->raw_data as $key=>$val){
+			foreach($val as $key2=>$val2){
+				$n[$key2][$key]=($val2-$this->mean[$key])/$this->variance[$key];
+			}
+		}
+		return ($n);
+	}
+
+	public function add_raw_data($input1,$input2,$output){
+		$this->raw_data[0][]=$input1;
+		$this->raw_data[1][]=$input2;
+		$this->raw_data[2][]=$output;
+	}
+
+	public function getNormalizeData(){
+		foreach($this->raw_data as $key=>$val){
+			$cs=$this->calc_variance($val);
+			$this->mean[$key]=$cs['mean'];
+			$this->variance[$key]=$cs['variance'];
+		}
+		return ($this->normalize());
+	}
+}
+
+
+$nick=new data();
+
+$db=new pdodb('se2');
+$stmt=$db->query('SELECT close_price FROM historical WHERE symbol="C" ORDER BY datee');
+$a=$stmt->rowCount();
+$i=0;
+while($rs=$stmt->fetch(PDO::FETCH_ASSOC)){
+	if($i==0){$close=$rs['close_price'];}
+	else{
+		$nick->add_raw_data($i,$close,$rs['close_price']);
+		$close=$rs['close_price'];
+	}
+	$i++;
+}
+$data=$nick->getNormalizeData();
+
 $m=count($data);
 //Initialize the weights
 $weight_ac=rng();
@@ -117,5 +164,22 @@ for($x=0;$x<$m;$x++){
 	$output_d=sigmoid($output_d);
 	$output_o=$output_c*$weight_co+$output_d*$weight_do;
 	$output_o=sigmoid($output_o);
-	echo $data[$x][0].' XOR '.$data[$x][1].' = '.$data[$x][2].' ('.$output_o.")\r\n";
+	echo ($data[$x][0]*$nick->variance[0]+$nick->mean[0]).' XOR '.($data[$x][1]*$nick->variance[1]+$nick->mean[1]).' = '.$output_o.' ('.($output_o*$nick->variance[2]+$nick->mean[2]).')'."\r\n";
 }
+$lastClosePrice=$nick->raw_data[2][($m-1)];
+$nextDay=$m;
+
+print_r($mean);
+print_r($variance);
+
+$nextDayNormalized=(($nextDay-$nick->mean[0])/$nick->variance[0]);
+$lastClosePriceNormalized=(($lastClosePrice-$nick->mean[1])/$nick->variance[1]);
+
+$output_c=$nextDayNormalized*$weight_ac+$lastClosePriceNormalized*$weight_bc;
+$output_c=sigmoid($output_c);
+$output_d=$nextDayNormalized*$weight_ad+$lastClosePriceNormalized*$weight_bd;
+$output_d=sigmoid($output_d);
+$output_o=$output_c*$weight_co+$output_d*$weight_do;
+$output_o=sigmoid($output_o);
+
+echo ($output_o*$nick->variance[2]+$nick->mean[2]);

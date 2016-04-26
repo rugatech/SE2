@@ -11,7 +11,7 @@
 		<div style="padding-bottom:4px">
 			<table class="primary_highlight" id="finishedTable" style="width:100%;border:0px">
 			<tbody>
-				<tr data-ng-repeat="stock in mCtrl.stocks | orderBy:'stock'">
+				<tr data-ng-repeat="stock in mCtrl.stocks">
 					<td style="width:22px"><i class="fa fa-remove fa-2x" data-ng-click="mCtrl.deleteStock(stock.stock,$index)"></i></td>
 					<td style="width:22px"><i class="fa fa-arrow-circle-o-down fa-2x" data-ng-click="mCtrl.downloadStock(stock.stock)"></i></td>
 					<td>({{stock.stock}})&nbsp;{{stock.stock_name}}</td>
@@ -23,4 +23,4 @@
 </div>
 <div id="preload_div" data-ng-show="mCtrl.preloadDiv"><img src="images/preload.gif"></div>
 <div class="chartTitle">{{mCtrl.chartTitle}}</div>
-<div id="chart_div" style="width: 700px; height: 389px;"></div>
+<div id="chart_div"></div>

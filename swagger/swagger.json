@@ -57,6 +57,39 @@
                 }
         	}
         },
+        "/stock/historical/{stock}":{
+        	"get":{
+        		"tags": [
+        			"Stocks"
+        		],
+        		"summary":"Fetch historical stock data",
+        		"description":"",
+        		"operationId":"getHistoricalStock",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "stock",
+                        "in": "path",
+                        "description": "stock symbol",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "500": {
+                        "description": "No historical data found for this stock"
+                    }
+                }
+        	}
+        },
         "/user": {
             "post": {
                 "tags": [
