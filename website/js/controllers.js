@@ -12,11 +12,12 @@ icarusApp.controller('MainController',function(AjaxService,AlertModalService,Edi
 	mCtrl.stocks=[];
 	mCtrl.preloadDiv=false;
 	mCtrl.chartTitle='';
-
+	mCtrl.google='';
 
 	AjaxService.getUserStocks(jwt['user']).then(
 		function(response){
-			mCtrl.stocks=response.data;
+			mCtrl.stocks=response.data["stocks"];
+			mCtrl.google=response.data["google"]
 			MyStockList.addStockData(mCtrl.stocks);
 		},
 		function(errmsg){

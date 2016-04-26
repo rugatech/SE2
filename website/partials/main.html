@@ -5,21 +5,36 @@
 	<button type="button" class="btn btn-sm btn-info ml5" data-ng-click="mCtrl.logout()"><i class="fa fa-sign-out mr5"></i>Logout</button>
 </div>
 
-<div class="roundTable" style="margin:15px auto;width:500px">
+<div class="roundTable" style="margin:15px auto;width:900px">
 	<div class="rtHeader" style="color:#000">Stocks I am following</div>
 	<div class="rtBody">
 		<div style="padding-bottom:4px">
 			<table class="primary_highlight" id="finishedTable" style="width:100%;border:0px">
+			<thead>
+				<td colspan="2">&nbsp;</td>
+				<td class="subheader">Stock Name</td>
+				<td class="subheader">Current</td>
+				<td class="subheader">10-day High</td>
+				<td class="subheader">1-Year Low</td>
+				<td class="subheader">1-Year High</td>
+				<td class="subheader">1-Year Avg</td>
+			</thead>
 			<tbody>
 				<tr data-ng-repeat="stock in mCtrl.stocks">
 					<td style="width:22px"><i class="fa fa-remove fa-2x" data-ng-click="mCtrl.deleteStock(stock.stock,$index)"></i></td>
 					<td style="width:22px"><i class="fa fa-arrow-circle-o-down fa-2x" data-ng-click="mCtrl.downloadStock(stock.stock)"></i></td>
 					<td>({{stock.stock}})&nbsp;{{stock.stock_name}}</td>
+					<td>{{stock.current_price}}</td>
+					<td>{{stock.ten_day}}</td>
+					<td>{{stock.min_price}}</td>
+					<td>{{stock.max_price}}</td>
+					<td>{{stock.avg_price}}</td>
 				</tr>
 			</tbody>
 			</table>
 		</div>
 	</div>
+	<div class="rtFooter" style="color:#000">Stocks with a lower average price then the lowest Google price for the past year:<div class="googleStock">{{mCtrl.google}}</div></div>
 </div>
 <div id="preload_div" data-ng-show="mCtrl.preloadDiv"><img src="images/preload.gif"></div>
 <div class="chartTitle">{{mCtrl.chartTitle}}</div>

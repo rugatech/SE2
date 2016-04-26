@@ -85,7 +85,7 @@ class datastore{
 		if($httpcode>=200 && $httpcode<300){
 			$pstmt=$this->db->prepare('DELETE FROM historical WHERE `symbol`=?');
 			$pstmt->execute([$stock]);
-			$pstmt2=$this->db->prepare('INSERT INTO historical (symbol,datee,close_price) VALUES (?,?,?)');
+			$pstmt2=$this->db->prepare('INSERT INTO historical (symbol,datee,open_price,high_price,low_price,volume,close_price) VALUES (?,?,?,?,?,?,?)');
 			$pstmt3=$this->db->prepare('SELECT stock_name FROM stock WHERE stock=? LIMIT 1');
 			$pstmt3->execute([$stock]);
 			$title=$pstmt3->fetch(\PDO::FETCH_ASSOC);
@@ -94,8 +94,8 @@ class datastore{
 			$retval=['title'=>$title['stock_name'],'data'=>[]];
 			for($i=1;$i<$m-1;$i++){
 				$cell=explode(',',$lines[$i]);
-				$retval['data'][]=[strtoupper($stock),$cell[0],$cell[4]];
-				$pstmt2->execute([$stock,$cell[0],$cell[4]]);
+				$retval['data'][]=[$stock,$cell[0],$cell[4]];
+				$pstmt2->execute([strtoupper($stock),$cell[0],$cell[1],$cell[2],$cell[3],$cell[5],$cell[4]]);
 			}
 			return($retval);
 		}
@@ -203,13 +203,20 @@ class datastore{
 		if(!is_numeric($user)){throw new DatastoreException('Invalid ID supplied',5);}
 		try{
 			$this->__authenticateUser();
-			$retval=[];
+			$retval=['stocks'=>'','google'=>''];
 			if($this->authenticatedUser['pkey']!=$user){throw new DatastoreException('You cannot view this record',3);}
-			$pstmt=$this->db->prepare('SELECT stock,stock_name FROM stock WHERE `user`=?');
+			$pstmt=$this->db->prepare('SELECT stock, stock_name, A1.avg_price, A2.min_price, A3.max_price, A4.close_price AS current_price, A5.ten_day FROM stock INNER JOIN (SELECT symbol, ROUND(AVG(close_price), 2) AS avg_price FROM historical GROUP BY symbol) AS A1 ON A1.symbol = stock.stock INNER JOIN (SELECT symbol, MIN(close_price) AS min_price FROM historical GROUP BY symbol) AS A2 ON A2.symbol = stock.stock INNER JOIN (SELECT symbol, MAX(close_price) AS max_price FROM historical GROUP BY symbol) AS A3 ON A3.symbol = stock.stock INNER JOIN (SELECT H.symbol, H.close_price, H.datee FROM historical AS H INNER JOIN (SELECT symbol, MAX(datee) AS max_date FROM historical GROUP BY symbol) AS B ON B.max_date = H.`datee` AND B.symbol = H.`symbol`) AS A4 ON A4.symbol = stock.stock INNER JOIN (SELECT symbol, MAX(close_price) AS ten_day FROM historical WHERE DATEDIFF(NOW(), datee) <= 10 GROUP BY symbol) AS A5 ON A5.symbol = stock.stock WHERE `user`=? ORDER BY stock.stock');
+			//'
 			$pstmt->execute([$user]);
 			while($rs=$pstmt->fetch(\PDO::FETCH_ASSOC)){
-				$retval[]=['stock'=>$rs['stock'],'stock_name'=>$rs['stock_name']];
+				$retval['stocks'][]=$rs;
 			}
+			$stmt=$this->db->query('SELECT stock.stock, stock.stock_name FROM stock INNER JOIN (SELECT symbol, AVG(close_price) AS avg_price FROM historical GROUP BY symbol) AS A1 ON A1.symbol = stock.stock INNER JOIN ( SELECT stock.stock, GP.goog_price FROM stock CROSS JOIN (SELECT MIN(close_price) AS goog_price FROM historical, stock WHERE symbol = "GOOG") AS GP ) AS A2 ON A2.stock=stock.stock WHERE A1.avg_price<A2.goog_price ORDER BY stock.stock');
+			//'
+			while($rs=$stmt->fetch(\PDO::FETCH_ASSOC)){
+				$txt.='('.$rs['stock'].') '.$rs['stock_name'].', ';
+			}
+			$retval['google']=substr($txt,0,-2);
 			return($retval);
 		}
 		catch(\PDOException $e){

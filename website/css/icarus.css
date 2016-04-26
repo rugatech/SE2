@@ -34,6 +34,7 @@ a.addLink img{margin-bottom:-3px;margin-right:3px}
 .roundTable .rtHeader,.roundTable_flatBottom .rtHeader{background-color:lightgreen;-moz-border-radius: 6px 6px 0px 0px;-webkit-border-radius: 6px 6px 0px 0px;border-radius: 6px 6px 0px 0px;text-align:center;font-size:12px;font-weight:bold;padding:6px;font-family:Verdana,Hevetica,sans-serif}
 .roundTable .rtBody,.roundTable_flatBottom .rtBody{padding-top:5px;font-size:12px;padding-bottom:5px}
 .roundTable_flatBottom .rtBody{background-color:#FFF}
+.roundTable .rtFooter{background-color:lightblue;-moz-border-radius: 0px 0px 6px 6px;-webkit-border-radius: 0px 0x 6px 6px;border-radius: 0px 0px 6px 6px;text-align:center;font-size:12px;font-weight:bold;padding:6px;font-family:Verdana,Hevetica,sans-serif}
 table.primary,table.primary_highlight,table.primary_largeFont{border:1px solid;border-color:#000000;border-collapse:collapse;background-color:#FFFFFF}
 table.primary td,table.primary_highlight td,table.primary_largeFont tr td{padding:3px}
 table.primary_largeFont td{font-size:11pt}
@@ -53,3 +54,5 @@ table.primary_highlight tbody tr:hover{background-color:#CCCCCC}
 #preload_div{width:100%;text-align:center;margin-top:15px}
 .chartTitle{width:100%;text-align:center;margin-top:15px;font-size:16px;font-weight:bold}
 #chart_div{width: 900px; height: 501px;}
+.subheader{text-decoration:underline;font-weight:bold}
+.googleStock{font-weight:normal;text-align:left}
