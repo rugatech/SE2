@@ -56,3 +56,4 @@ table.primary_highlight tbody tr:hover{background-color:#CCCCCC}
 #chart_div{width: 900px; height: 501px;}
 .subheader{text-decoration:underline;font-weight:bold}
 .googleStock{font-weight:normal;text-align:left}
+#termTable td, #algTable td{vertical-align:middle;font-size:14px}

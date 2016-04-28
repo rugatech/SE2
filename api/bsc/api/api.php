@@ -137,12 +137,21 @@ class api
 			}
 		});
 
-		$app->get('/stock/{stock}',function($request, $response, $args){
+		$app->get('/stock/{stock}/{term}/{algorithm}',function($request, $response, $args){
 			try{
 				$retval=[];
-				$retval['historical']=(new datastore\datastore($_SERVER['HTTP_AUTHORIZATION']))->downloadStock($args['stock']);
-				$baynes=new model\baynes($args['stock']);
-				$retval['forecast']=$baynes->forecast;
+				switch($args['term']){
+					case 's':
+						$retval=(new datastore\datastore($_SERVER['HTTP_AUTHORIZATION']))->getCurrentStock($args['stock'],$args['algorithm']);
+					break;
+					case 'l':
+						$retval=(new datastore\datastore($_SERVER['HTTP_AUTHORIZATION']))->getHistoricalStock($args['stock'],$args['algorithm']);
+					break;
+					default:
+						throw new apiException('Invalid value for Term',1);
+					break;
+				}
+
 				$response->write(json_encode($retval,JSON_NUMERIC_CHECK));
 				return $response;
 			}

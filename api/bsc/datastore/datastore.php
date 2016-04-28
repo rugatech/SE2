@@ -199,14 +199,17 @@ class datastore{
 		}
 	}
 
-	public function getUserStock($user){
+	public function getUserStock($user,$stock=''){
 		if(!is_numeric($user)){throw new DatastoreException('Invalid ID supplied',5);}
 		try{
 			$this->__authenticateUser();
 			$retval=['stocks'=>'','google'=>''];
 			if($this->authenticatedUser['pkey']!=$user){throw new DatastoreException('You cannot view this record',3);}
-			$pstmt=$this->db->prepare('SELECT stock, stock_name, A1.avg_price, A2.min_price, A3.max_price, A4.close_price AS current_price, A5.ten_day FROM stock INNER JOIN (SELECT symbol, ROUND(AVG(close_price), 2) AS avg_price FROM historical GROUP BY symbol) AS A1 ON A1.symbol = stock.stock INNER JOIN (SELECT symbol, MIN(close_price) AS min_price FROM historical GROUP BY symbol) AS A2 ON A2.symbol = stock.stock INNER JOIN (SELECT symbol, MAX(close_price) AS max_price FROM historical GROUP BY symbol) AS A3 ON A3.symbol = stock.stock INNER JOIN (SELECT H.symbol, H.close_price, H.datee FROM historical AS H INNER JOIN (SELECT symbol, MAX(datee) AS max_date FROM historical GROUP BY symbol) AS B ON B.max_date = H.`datee` AND B.symbol = H.`symbol`) AS A4 ON A4.symbol = stock.stock INNER JOIN (SELECT symbol, MAX(close_price) AS ten_day FROM historical WHERE DATEDIFF(NOW(), datee) <= 10 GROUP BY symbol) AS A5 ON A5.symbol = stock.stock WHERE `user`=? ORDER BY stock.stock');
+			$qry='SELECT stock, stock_name, A1.avg_price, A2.min_price, A3.max_price, A4.close_price AS current_price, A5.ten_day FROM stock INNER JOIN (SELECT symbol, ROUND(AVG(close_price), 2) AS avg_price FROM historical GROUP BY symbol) AS A1 ON A1.symbol = stock.stock INNER JOIN (SELECT symbol, MIN(close_price) AS min_price FROM historical GROUP BY symbol) AS A2 ON A2.symbol = stock.stock INNER JOIN (SELECT symbol, MAX(close_price) AS max_price FROM historical GROUP BY symbol) AS A3 ON A3.symbol = stock.stock INNER JOIN (SELECT H.symbol, H.close_price, H.datee FROM historical AS H INNER JOIN (SELECT symbol, MAX(datee) AS max_date FROM historical GROUP BY symbol) AS B ON B.max_date = H.`datee` AND B.symbol = H.`symbol`) AS A4 ON A4.symbol = stock.stock INNER JOIN (SELECT symbol, MAX(close_price) AS ten_day FROM historical WHERE DATEDIFF(NOW(), datee) <= 10 GROUP BY symbol) AS A5 ON A5.symbol = stock.stock WHERE `user`=?';
 			//'
+			if(!empty($stock)){$qry.=' AND stock.stock="'.$stock.'"';}
+			$qry.=' ORDER BY stock.stock';
+			$pstmt=$this->db->prepare($qry);
 			$pstmt->execute([$user]);
 			while($rs=$pstmt->fetch(\PDO::FETCH_ASSOC)){
 				$retval['stocks'][]=$rs;
@@ -248,10 +251,12 @@ class datastore{
 				throw new DatastoreException('Invalid stock symbol',2);
 			}
 			else{
+				$this->__getYahooStock($stock);
 				$stockName=trim($stockName);
 				$pstmt=$this->db->prepare('INSERT INTO stock(`user`,stock,stock_name) VALUES (?,?,?)');
 				$pstmt->execute([$user,$stock,$stockName]);
-				return(['symbol'=>$stock,'stock_name'=>$stockName]);
+				$newStock=$this->getUserStock($user,$stock);
+				return(['symbol'=>$stock,'stock_name'=>$stockName,'avg_price'=>$newStock['stocks'][0]['avg_price'],'min_price'=>$newStock['stocks'][0]['min_price'],'max_price'=>$newStock['stocks'][0]['max_price'],'current_price'=>$newStock['stocks'][0]['current_price'],'ten_day'=>$newStock['stocks'][0]['ten_day']]);
 			}
 		}
 		catch(\PDOException $e){
@@ -259,34 +264,51 @@ class datastore{
 		}
 	}
 
-	public function downloadStock($stock){
-		try{
-			$this->__authenticateUser();
-			$retval=$this->__getYahooStock($stock);
-			if(!$retval){
-				throw new DatastoreException('Invalid stock symbol',2);
-			}
-			else{
-				return($retval);
-			}
+	protected function __getForecast($txt,$alg){
+		$in='C:\\Windows\\Temp\\ANN_input.txt';
+		$out='C:\\Windows\\Temp\\ANN_output.txt';
+		file_put_contents($in,$txt.'5 5');
+		@unlink ($out);
+		switch($alg){
+			case 'ann':
+				$x='ANN';
+			break;
+			case 'bay':
+				$x='BCF';
+			break;
+			case 'svm':
+				$x='SVM';
+			break;
+			default:
+				exit;
+			break;
 		}
-		catch(\PDOException $e){
-			throw new DatastoreException('Database Error',2);
+		shell_exec('SCHTASKS /F /Create /TN _notepad /TR "matlab -sd \"C:\inetpub\wwwroot\se2\api\bsc\model\" -nosplash -nodesktop -minimize -r \'try;'.$x.';catch;end;quit();\'" /SC DAILY /RU INTERACTIVE');
+		shell_exec('SCHTASKS /RUN /TN "_notepad"');
+		shell_exec('SCHTASKS /DELETE /TN "_notepad" /F');
+		$i=date('U');
+		while(!file_exists($out)){
 		}
+		sleep(1);
+		$results=file_get_contents($out);
+		return($results);
 	}
 
-	public function getHistoricalStock($stock){
+	public function getHistoricalStock($stock,$alg){
 		try{
-			$pstmt=$this->db->prepare('SELECT datee,close_price FROM `historical` WHERE symbol=? ORDER BY datee');
+			$pstmt=$this->db->prepare('SELECT s.`stock_name`,datee,close_price FROM `historical` AS h INNER JOIN stock AS s ON s.`stock`=h.`symbol` WHERE symbol=? ORDER BY datee');
 			$pstmt->execute([$stock]);
 			if($pstmt->rowCount()<1){
 				throw new DatastoreException('No historical data found for this stock',2);
 			}
 			else{
-				$retval=[];
+				$retval=['title'=>'','data'=>[]];
 				while($rs=$pstmt->fetch(\PDO::FETCH_ASSOC)){
-					$retval[]=$rs;
+					$retval['title']=$rs['stock_name'];
+					$retval['data'][]=$rs;
+					$txt.=$rs['close_price'].' ';
 				}
+				$retval['forecast']=$this->__getForecast($txt,$alg);
 				return($retval);
 			}
 		}
@@ -295,15 +317,34 @@ class datastore{
 		}
 	}
 
-	public function test($stock){
-		echo $stock;
+	public function getCurrentStock($stock,$alg){
+		try{
+			$pstmt=$this->db->prepare('SELECT s.stock_name, c.price, LEFT(c.ts,16) AS ts FROM current AS c INNER JOIN stock AS s ON s.stock = c.symbol WHERE symbol = ? AND MONTH(ts) = MONTH(NOW()) AND DAY(ts) = DAY(NOW()) AND YEAR(ts) = YEAR(NOW()) ORDER BY ts');
+			$pstmt->execute([$stock]);
+			if($pstmt->rowCount()<1){
+				throw new DatastoreException('No current data found for this stock',2);
+			}
+			else{
+				$retval=['title'=>'','data'=>[]];
+				while($rs=$pstmt->fetch(\PDO::FETCH_ASSOC)){
+					$retval['title']=$rs['stock_name'];
+					$retval['data'][]=['datee'=>$rs['ts'],'close_price'=>$rs['price']];
+					$txt.=$rs['price'].' ';
+				}
+				$retval['forecast']=$this->__getForecast($txt,$alg);
+				return($retval);
+			}
+		}
+		catch(\PDOException $e){
+			throw new DatastoreException('Database Error',2);
+		}
 	}
 
 	public function logout(){
 		try{
 			$this->__authenticateUser();
-			$pstmt=$this->db->prepare('DELETE FROM session WHERE sessid=?');
-			$pstmt->execute([$this->jwt]);
+			//$pstmt=$this->db->prepare('DELETE FROM session WHERE sessid=?');
+			//$pstmt->execute([$this->jwt]);
 			return ('{"logout":1}');
 		}
 		catch(\PDOException $e){

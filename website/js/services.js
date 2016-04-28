@@ -99,10 +99,10 @@ icarusApp.service('AjaxService',function($http,$q,$cookies){
 		return (request);
 	}
 
-	this.downloadStock=function(stock){
+	this.downloadStock=function(stock,term,algorithm){
 		var request = $http({
 			method: 'GET',
-			url: "http://www.rugatech.com/se2/api/stock/"+stock,
+			url: "http://www.rugatech.com/se2/api/stock/"+stock+"/"+term+"/"+algorithm,
 			headers: {
 	    	    'Authorization': 'Bearer '+$cookies.get('jwt'),
 			}
@@ -193,5 +193,21 @@ icarusApp.service('AddStockModal',function($uibModal,AjaxService,AlertModalServi
 
 	this.save=function(user,stock){
   		return(AjaxService.addStock(user,stock));
+	}
+});
+
+icarusApp.service('DownloadModal',function($uibModal,AjaxService,AlertModalService){
+	var stock=""
+	this.open=function(stock){
+		this.stock=stock;
+		$uibModal.open({
+			templateUrl:'partials/downloadModal.html',
+			controller:'DownloadController as dCtrl',
+			size: 'sm-400'
+		});
+	}
+
+	this.save=function(term,algorithm){
+  		return(AjaxService.downloadStock(this.stock,term,algorithm));
 	}
 });

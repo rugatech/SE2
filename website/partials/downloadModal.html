@@ -1,0 +1,43 @@
+<div id="createUserModal" role="dialog">
+	<div class="modal-header"><h4 class="modal-title">Get Stock Prediction</h4></div>
+	<div class="modal-body" style="font-size:12px">
+   		<form role="form">
+			<table align="center">
+				<tr>
+					<td style="padding-right:20px;vertical-align:top">
+						<table align="center" id="termTable">
+							<tr>
+								<td><input type="radio" name="term" id="terms" data-ng-model="dCtrl.term" value="s" style="margin-top:-3px" checked></td>
+								<td style="padding-top:5px;padding-left:2px"><label for="terms">Short-Term</label></td>
+							</tr>
+							<tr>
+								<td><input type="radio" name="term" id="terml" data-ng-model="dCtrl.term" value="l" style="margin-bottom:-3px"></td>
+								<td style="padding-top:5px;padding-left:2px"><label for="terml">Long-Term</label></td>
+							</tr>
+						</table>
+					</td>
+					<td style="padding-left:20px">
+						<table align="center" id="algTable">
+							<tr>
+								<td><input type="radio" name="alg" id="algbay" data-ng-model="dCtrl.alg" value="bay" style="margin-top:-3px" checked></td>
+								<td style="padding-top:5px;padding-left:2px"><label for="algbay">Bayesian</label></td>
+							</tr>
+							<tr>
+								<td><input type="radio" name="alg" id="algann" data-ng-model="dCtrl.alg" value="ann" style="margin-top:-3px"></td>
+								<td style="padding-top:5px;padding-left:2px"><label for="algann">Neural Network</label></td>
+							</tr>
+							<tr>
+								<td><input type="radio" name="alg" id="algsvm" data-ng-model="dCtrl.alg" value="svm" style="margin-top:-3px"></td>
+								<td style="padding-top:5px;padding-left:2px"><label for="algsvm">SVM</label></td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+   		</form>
+   	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-sm btn-info" data-ng-click="dCtrl.save()">Go</button>
+		<button type="button" class="btn btn-sm btn-info" data-ng-click="dCtrl.close()">Cancel</button>
+	</div>
+</div>

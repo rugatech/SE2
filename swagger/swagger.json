@@ -24,12 +24,12 @@
         }
     ],
     "paths": {
-        "/stock/{stock}":{
+        "/stock/{stock}/{term}/{algorithm}":{
         	"get":{
         		"tags": [
         			"Stocks"
         		],
-        		"summary":"Download the closing price of a stock for each price for the past year from Yahoo",
+        		"summary":"Download historical or current stock closing prices. Also includes future forecasted data",
         		"description":"",
         		"operationId":"getYahooStock",
                 "consumes": [
@@ -45,11 +45,28 @@
                         "description": "stock symbol",
                         "required": true,
                         "type": "string"
+                    },
+                    {
+                        "name": "term",
+                        "in": "path",
+                        "description": "Long-Term or Short-Term ('l' or 's')",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "algorithm",
+                        "in": "path",
+                        "description": "Forecast Algorithm ('ann' OR 'bay' OR 'svn')",
+                        "required": true,
+                        "type": "string"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "Ok"
+                    },
+                    "404": {
+                    	"description": "Invalid value for Term OR Invalid value for Algorithm"
                     },
                     "500": {
                         "description": "Invalid stock symbol"

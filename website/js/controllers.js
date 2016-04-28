@@ -1,6 +1,6 @@
 google.charts.load('current', {'packages':['annotationchart']});
 
-icarusApp.controller('MainController',function(AjaxService,AlertModalService,EditUserModal,AddStockModal,$cookies,JWT,MyStockList){
+icarusApp.controller('MainController',function(AjaxService,AlertModalService,EditUserModal,AddStockModal,$cookies,JWT,MyStockList,DownloadModal){
 	var mCtrl=this;
 
 	if($cookies.get('jwt')==""||$cookies.get('jwt')==null){
@@ -10,7 +10,7 @@ icarusApp.controller('MainController',function(AjaxService,AlertModalService,Edi
 	}
 	else{var jwt=JWT.parseJWT($cookies.get('jwt'));}
 	mCtrl.stocks=[];
-	mCtrl.preloadDiv=false;
+	//mCtrl.preloadDiv=false;
 	mCtrl.chartTitle='';
 	mCtrl.google='';
 
@@ -46,48 +46,49 @@ icarusApp.controller('MainController',function(AjaxService,AlertModalService,Edi
 	}
 
 	mCtrl.downloadStock=function(stock){
-		mCtrl.preloadDiv=true;
-		AjaxService.downloadStock(stock).then(
-			function(response){
-				mCtrl.preloadDiv=false;
-				mCtrl.chartTitle=response.data['historical']['title'];
-				google.charts.setOnLoadCallback(drawChart);
-				function drawChart() {
-					var m=response.data['historical']['data'].length, d="", dataRows=[], lastDate="";
-					var data = new google.visualization.DataTable();
-					for(var i=0;i<m;i++){
-						d=response.data['historical']['data'][i][1].split("-");
-						dataRows.push([new Date(d[0],(d[1]-1),d[2]),response.data['historical']['data'][i][2],undefined,undefined,undefined,undefined,undefined]);
-						if(i==0){lastDate=d;}
-					};
-					var forecast=response.data['forecast'];
-					m=forecast.length;
-					for(i=0;i<m;i++){
-						forecast[i]=parseFloat(forecast[i].toFixed(2));
-						dataRows.push([new Date(parseInt(lastDate[0]),(parseInt(lastDate[1])-1),(parseInt(lastDate[2])+i+1)),undefined,undefined,undefined,forecast[i],forecast[i].toString(),undefined]);
-					};
-					data.addColumn('date', 'Date'); // Implicit series 1 data col.
-					data.addColumn('number', 'Historical Price'); // Implicit domain label col.
-					data.addColumn({type:'string', role:'annotation'});
-					data.addColumn({type:'string', role:'annotationText'});
-					data.addColumn('number', 'Future Price'); // Implicit domain label col.
-					data.addColumn({type:'string', role:'annotation'});
-					data.addColumn({type:'string', role:'annotationText'});
-
-					data.addRows(dataRows);
-					var chart = new google.visualization.AnnotationChart(document.getElementById('chart_div'));
-					var options = {
-						displayAnnotations: true,
-						allowHTML: true
-					};
-		        	chart.draw(data, options);
-				}
-			},
-			function(errmsg){
-				mCtrl.preloadDiv=false;
-				AlertModalService.open(errmsg.statusText,"danger");
-			}
-		)
+		DownloadModal.open(stock);
+		//mCtrl.preloadDiv=true;
+		//AjaxService.downloadStock(stock).then(
+		//	function(response){
+		//		mCtrl.preloadDiv=false;
+		//		mCtrl.chartTitle=response.data['historical']['title'];
+		//		google.charts.setOnLoadCallback(drawChart);
+		//		function drawChart() {
+		//			var m=response.data['historical']['data'].length, d="", dataRows=[], lastDate="";
+		//			var data = new google.visualization.DataTable();
+		//			for(var i=0;i<m;i++){
+		//				d=response.data['historical']['data'][i][1].split("-");
+		//				dataRows.push([new Date(d[0],(d[1]-1),d[2]),response.data['historical']['data'][i][2],undefined,undefined,undefined,undefined,undefined]);
+		//				if(i==0){lastDate=d;}
+		//			};
+		//			var forecast=response.data['forecast'];
+		//			m=forecast.length;
+		//			for(i=0;i<m;i++){
+		//				forecast[i]=parseFloat(forecast[i].toFixed(2));
+		//				dataRows.push([new Date(parseInt(lastDate[0]),(parseInt(lastDate[1])-1),(parseInt(lastDate[2])+i+1)),undefined,undefined,undefined,forecast[i],forecast[i].toString(),undefined]);
+		//			};
+		//			data.addColumn('date', 'Date'); // Implicit series 1 data col.
+		//			data.addColumn('number', 'Historical Price'); // Implicit domain label col.
+		//			data.addColumn({type:'string', role:'annotation'});
+		//			data.addColumn({type:'string', role:'annotationText'});
+		//			data.addColumn('number', 'Future Price'); // Implicit domain label col.
+		//			data.addColumn({type:'string', role:'annotation'});
+		//			data.addColumn({type:'string', role:'annotationText'});
+//
+		//			data.addRows(dataRows);
+		//			var chart = new google.visualization.AnnotationChart(document.getElementById('chart_div'));
+		//			var options = {
+		//				displayAnnotations: true,
+		//				allowHTML: true
+		//			};
+		//        	chart.draw(data, options);
+		//		}
+		//	},
+		//	function(errmsg){
+		//		mCtrl.preloadDiv=false;
+		//		AlertModalService.open(errmsg.statusText,"danger");
+		//	}
+		//)
 	}
 
 	mCtrl.logout=function(){
@@ -195,12 +196,117 @@ icarusApp.controller('AddStockController',function($uibModalInstance,AddStockMod
  			save.then(
 			function(response){
 				AlertModalService.open("Stock successfully added","success");
-				MyStockList.addStock({"stock":response.data["symbol"],"stock_name":response.data["stock_name"]});
+				MyStockList.addStock({
+					"stock":response.data["symbol"],
+					"stock_name":response.data["stock_name"],
+					"ten_day":response.data["ten_day"],
+					"min_price":response.data["min_price"],
+					"max_price":response.data["max_price"],
+					"current_price":response.data["current_price"],
+					"avg_price":response.data["avg_price"]
+				});
 				$uibModalInstance.dismiss('cancel');
 			},
 			function(errmsg){
 				AlertModalService.open(errmsg.statusText,"danger");
 			}
 		);
+	};
+});
+
+icarusApp.controller('DownloadController',function($uibModalInstance,DownloadModal,AlertModalService,JWT,$cookies,AjaxService){
+	var dCtrl=this, errmsg="";
+	var jwt=JWT.parseJWT($cookies.get('jwt'));
+
+	dCtrl.close=function(){
+		$uibModalInstance.dismiss('cancel');
+	};
+	dCtrl.save=function(){
+		errmsg="";
+		if(dCtrl.term==undefined){errmsg="You must select Short-Term or Long-Term";}
+		if(dCtrl.alg==undefined){errmsg="You must select an Algorithm";}
+		if(errmsg==""){
+			var pd=document.getElementById('preload_div');
+			pd.style.display='block';
+			var save=DownloadModal.save(dCtrl.term,dCtrl.alg);
+ 			save.then(
+			function(response){
+				document.getElementById('chartTitle').innerHTML=response.data['title'];
+				google.charts.setOnLoadCallback(drawChart);
+				function drawChart() {
+					var m=response.data['data'].length, d="", dataRows=[], lastDate="";
+					var data = new google.visualization.DataTable();
+					switch(dCtrl.term){
+						case 'l':
+							for(var i=0;i<m;i++){
+								d=response.data['data'][i]["datee"].split("-");
+								dataRows.push([new Date(d[0],(d[1]-1),d[2]),response.data['data'][i]["close_price"],undefined,undefined,undefined,undefined,undefined]);
+								if(i==m-1){lastDate=d;}
+							};
+							var forecast=response.data['forecast'].split(" ");
+							m=forecast.length;
+							for(i=0;i<m;i++){
+								forecast[i]=parseFloat(forecast[i]);
+								dataRows.push([new Date(parseInt(lastDate[0]),(parseInt(lastDate[1])-1),(parseInt(lastDate[2])+i+1)),undefined,undefined,undefined,forecast[i],forecast[i].toString(),undefined]);
+							};
+							data.addColumn('date', 'Date'); // Implicit series 1 data col.
+							data.addColumn('number', 'Historical Price'); // Implicit domain label col.
+							data.addColumn({type:'string', role:'annotation'});
+							data.addColumn({type:'string', role:'annotationText'});
+							data.addColumn('number', 'Future Price'); // Implicit domain label col.
+							data.addColumn({type:'string', role:'annotation'});
+							data.addColumn({type:'string', role:'annotationText'});
+							data.addRows(dataRows);
+						break;
+						case 's':
+							var lastDate2='';
+							for(var i=0;i<m;i++){
+								d=response.data['data'][i]["datee"].split("T");
+								d1=d[0].split("-");
+								d2=d[1].split(":");
+								dataRows.push([new Date(d1[0],(d1[1]-1),d1[2],d2[0],d2[1]),response.data['data'][i]["close_price"],undefined,undefined,undefined,undefined,undefined]);
+								if(i==m-1){
+									lastDate=d1;
+									lastDate2=d2;
+								}
+							}
+							var forecast=response.data['forecast'].split(" ");
+							m=forecast.length;
+							for(i=0;i<m;i++){
+								forecast[i]=parseFloat(forecast[i]);
+								lastDate2[1]=parseInt(lastDate2[1])+1+i;
+								dataRows.push([new Date(parseInt(lastDate[0]),parseInt((lastDate[1]-1)),parseInt(lastDate[2]),parseInt(lastDate2[0]),lastDate2[1]),undefined,undefined,undefined,forecast[i],forecast[i].toString(),undefined]);
+							};
+							data.addColumn('date', 'Date'); // Implicit series 1 data col.
+							data.addColumn('number', 'Historical Price'); // Implicit domain label col.
+							data.addColumn({type:'string', role:'annotation'});
+							data.addColumn({type:'string', role:'annotationText'});
+							data.addColumn('number', 'Future Price'); // Implicit domain label col.
+							data.addColumn({type:'string', role:'annotation'});
+							data.addColumn({type:'string', role:'annotationText'});
+							data.addRows(dataRows);
+						break;
+					}
+
+					var chart = new google.visualization.AnnotationChart(document.getElementById('chart_div'));
+					var options = {
+						displayAnnotations: true,
+						allowHTML: true
+					};
+		        	chart.draw(data, options);
+					pd.style.display='none';
+				}
+
+
+
+				$uibModalInstance.dismiss('cancel');
+			},
+			function(errmsg){
+				AlertModalService.open(errmsg.statusText,"danger");
+			}
+		);
+
+		}
+		else{AlertModalService.open(errmsg,"danger");}
 	};
 });
