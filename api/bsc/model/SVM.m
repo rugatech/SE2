@@ -37,10 +37,10 @@ function SVM
 
 close all;clc;
 
-data0=[36.16 36.07 36.48 36.66 37.31 37.16 36.50 36.52 36.33 37.84 5 2];
+%data0=[36.16 36.07 36.48 36.66 37.31 37.16 36.50 36.52 36.33 37.84 5 5];
 
 %data0=importdata('c:\Windows\Temp\ANN_input.txt').data;
-%data0=importdata('c:\Windows\Temp\ANN_input.txt');
+data0=importdata('c:\Windows\Temp\ANN_input.txt');
 pred_period=data0(length(data0)); 
 data=data0(1:length(data0)-2);
 day=data0(length(data0)-1); 
@@ -61,7 +61,7 @@ for iter=1:pred_period
 	pred(iter)=svmpredict(mean(input_test),input_test,model);
 end
 
-fid=fopen('c:\Windows\Temp\ANN_input.txt','wt');
+fid=fopen('c:\Windows\Temp\ANN_output.txt','wt');
 for num=1:length(pred)
 	if num~=length(pred)
 		fprintf(fid,'%0.2f ',pred(num));

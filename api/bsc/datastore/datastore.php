@@ -267,17 +267,23 @@ class datastore{
 	protected function __getForecast($txt,$alg){
 		$in='C:\\Windows\\Temp\\ANN_input.txt';
 		$out='C:\\Windows\\Temp\\ANN_output.txt';
-		file_put_contents($in,$txt.'5 5');
+
 		@unlink ($out);
 		switch($alg){
 			case 'ann':
 				$x='ANN';
+				file_put_contents($in,$txt.'5 5');
 			break;
 			case 'bay':
 				$x='BCF';
+				$q=explode(" ",$txt);
+				$z=array_slice($q,-15);
+				$txt=implode(" ",$z);
+				file_put_contents($in,$txt.' 0.05 11.1 5');
 			break;
 			case 'svm':
 				$x='SVM';
+				file_put_contents($in,$txt.'5 5');
 			break;
 			default:
 				exit;
