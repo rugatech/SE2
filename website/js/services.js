@@ -201,7 +201,7 @@ icarusApp.service('DownloadModal',function($uibModal,AjaxService,AlertModalServi
 	this.open=function(stock){
 		this.stock=stock;
 		$uibModal.open({
-			templateUrl:'partials/downloadModal.html',
+			templateUrl:'partials/downloadModalxxx.html',
 			controller:'DownloadController as dCtrl',
 			size: 'sm-400'
 		});

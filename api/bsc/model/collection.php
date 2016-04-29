@@ -17,7 +17,7 @@ class cron
 		##cURL is a library avaiable to most modern languages for the purposes of transmitting data via the HTTP protocol
 
 		##The URL for querying the Google Finance API
-		$url='http://www.google.com/finance/info?infotype=infoquoteall&q=NASDAQ:GOOG,NASDAQ:YHOO,NYSE:F,NASDAQ:ATVI,NYSE:BAC,NYSE:AA,NYSEMKT:SEB,NASDAQ:MSFT,NYSE:C,NASDAQ:AAPL,NASDAQ:SIRI';
+		$url='http://www.google.com/finance/info?infotype=infoquoteall&q=NASDAQ:GOOG,NASDAQ:YHOO,NYSE:F,NASDAQ:ATVI,NYSE:BAC,NYSE:AA,NASDAQ:MSFT,NYSE:C,NASDAQ:AAPL,NASDAQ:SIRI';
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);

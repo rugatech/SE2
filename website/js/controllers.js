@@ -47,48 +47,6 @@ icarusApp.controller('MainController',function(AjaxService,AlertModalService,Edi
 
 	mCtrl.downloadStock=function(stock){
 		DownloadModal.open(stock);
-		//mCtrl.preloadDiv=true;
-		//AjaxService.downloadStock(stock).then(
-		//	function(response){
-		//		mCtrl.preloadDiv=false;
-		//		mCtrl.chartTitle=response.data['historical']['title'];
-		//		google.charts.setOnLoadCallback(drawChart);
-		//		function drawChart() {
-		//			var m=response.data['historical']['data'].length, d="", dataRows=[], lastDate="";
-		//			var data = new google.visualization.DataTable();
-		//			for(var i=0;i<m;i++){
-		//				d=response.data['historical']['data'][i][1].split("-");
-		//				dataRows.push([new Date(d[0],(d[1]-1),d[2]),response.data['historical']['data'][i][2],undefined,undefined,undefined,undefined,undefined]);
-		//				if(i==0){lastDate=d;}
-		//			};
-		//			var forecast=response.data['forecast'];
-		//			m=forecast.length;
-		//			for(i=0;i<m;i++){
-		//				forecast[i]=parseFloat(forecast[i].toFixed(2));
-		//				dataRows.push([new Date(parseInt(lastDate[0]),(parseInt(lastDate[1])-1),(parseInt(lastDate[2])+i+1)),undefined,undefined,undefined,forecast[i],forecast[i].toString(),undefined]);
-		//			};
-		//			data.addColumn('date', 'Date'); // Implicit series 1 data col.
-		//			data.addColumn('number', 'Historical Price'); // Implicit domain label col.
-		//			data.addColumn({type:'string', role:'annotation'});
-		//			data.addColumn({type:'string', role:'annotationText'});
-		//			data.addColumn('number', 'Future Price'); // Implicit domain label col.
-		//			data.addColumn({type:'string', role:'annotation'});
-		//			data.addColumn({type:'string', role:'annotationText'});
-//
-		//			data.addRows(dataRows);
-		//			var chart = new google.visualization.AnnotationChart(document.getElementById('chart_div'));
-		//			var options = {
-		//				displayAnnotations: true,
-		//				allowHTML: true
-		//			};
-		//        	chart.draw(data, options);
-		//		}
-		//	},
-		//	function(errmsg){
-		//		mCtrl.preloadDiv=false;
-		//		AlertModalService.open(errmsg.statusText,"danger");
-		//	}
-		//)
 	}
 
 	mCtrl.logout=function(){
@@ -243,17 +201,32 @@ icarusApp.controller('DownloadController',function($uibModalInstance,DownloadMod
 								dataRows.push([new Date(d[0],(d[1]-1),d[2]),response.data['data'][i]["close_price"],undefined,undefined,undefined,undefined,undefined]);
 								if(i==m-1){lastDate=d;}
 							};
-							var forecast=response.data['forecast'].split(" ");
-							m=forecast.length;
-							for(i=0;i<m;i++){
-								forecast[i]=parseFloat(forecast[i]);
-								dataRows.push([new Date(parseInt(lastDate[0]),(parseInt(lastDate[1])-1),(parseInt(lastDate[2])+i+1)),undefined,undefined,undefined,forecast[i],forecast[i].toString(),undefined]);
-							};
+							if(response.data['forecast']!=null){
+								var forecast=response.data['forecast'].split(" ");
+								m=forecast.length;
+								for(i=0;i<m;i++){
+									forecast[i]=parseFloat(forecast[i]);
+									dataRows.push([new Date(parseInt(lastDate[0]),(parseInt(lastDate[1])-1),(parseInt(lastDate[2])+i+1)),undefined,undefined,undefined,forecast[i],forecast[i].toString(),undefined]);
+								};
+							}
+							if(response.data['moving_average']!=null){
+								var ma=response.data['moving_average'];
+								m=ma.length;
+								for(i=0;i<m;i++){
+									d=ma[i]["datee"].split("-");
+									dataRows.push([new Date(d[0],(d[1]-1),d[2]),undefined,undefined,undefined,parseFloat(ma[i]["price"]),undefined,undefined]);
+								}
+							}
 							data.addColumn('date', 'Date'); // Implicit series 1 data col.
 							data.addColumn('number', 'Historical Price'); // Implicit domain label col.
 							data.addColumn({type:'string', role:'annotation'});
 							data.addColumn({type:'string', role:'annotationText'});
-							data.addColumn('number', 'Future Price'); // Implicit domain label col.
+							if(response.data['forecast']!=null){
+								data.addColumn('number', 'Future Price'); // Implicit domain label col.
+							}
+							else{
+								data.addColumn('number', '30-Day Moving Average'); // Implicit domain label col.
+							}
 							data.addColumn({type:'string', role:'annotation'});
 							data.addColumn({type:'string', role:'annotationText'});
 							data.addRows(dataRows);
@@ -270,13 +243,15 @@ icarusApp.controller('DownloadController',function($uibModalInstance,DownloadMod
 									lastDate2=d2;
 								}
 							}
-							var forecast=response.data['forecast'].split(" ");
-							m=forecast.length;
-							for(i=0;i<m;i++){
-								forecast[i]=parseFloat(forecast[i]);
-								lastDate2[1]=parseInt(lastDate2[1])+1+i;
-								dataRows.push([new Date(parseInt(lastDate[0]),parseInt((lastDate[1]-1)),parseInt(lastDate[2]),parseInt(lastDate2[0]),lastDate2[1]),undefined,undefined,undefined,forecast[i],forecast[i].toString(),undefined]);
-							};
+							if(response.data['forecast']!=null){
+								var forecast=response.data['forecast'].split(" ");
+								m=forecast.length;
+								for(i=0;i<m;i++){
+									forecast[i]=parseFloat(forecast[i]);
+									lastDate2[1]=parseInt(lastDate2[1])+1+i;
+									dataRows.push([new Date(parseInt(lastDate[0]),parseInt((lastDate[1]-1)),parseInt(lastDate[2]),parseInt(lastDate2[0]),lastDate2[1]),undefined,undefined,undefined,forecast[i],forecast[i].toString(),undefined]);
+								};
+							}
 							data.addColumn('date', 'Date'); // Implicit series 1 data col.
 							data.addColumn('number', 'Historical Price'); // Implicit domain label col.
 							data.addColumn({type:'string', role:'annotation'});

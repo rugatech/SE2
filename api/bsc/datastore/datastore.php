@@ -109,6 +109,73 @@ class datastore{
 		return $data;
 	}
 
+	protected function __getForecast($txt,$alg){
+		$in='C:\\Windows\\Temp\\ANN_input.txt';
+		$out='C:\\Windows\\Temp\\ANN_output.txt';
+		$getForecast=TRUE;
+		@unlink ($out);
+		switch($alg){
+			case 'ann':
+				$x='ANN';
+				file_put_contents($in,$txt.'5 5');
+			break;
+			case 'bay':
+				$x='BCF';
+				$q=explode(" ",$txt);
+				$z=array_slice($q,-15);
+				$txt=implode(" ",$z);
+				file_put_contents($in,$txt.' 0.05 11.1 5');
+			break;
+			case 'svm':
+				$x='SVM';
+				file_put_contents($in,$txt.'5 5');
+			break;
+			case 'none':
+				$getForecast=FALSE;
+			break;
+			default:
+				exit;
+			break;
+		}
+		if($getForecast){
+			shell_exec('SCHTASKS /F /Create /TN _notepad /TR "matlab -sd \"C:\inetpub\wwwroot\se2\api\bsc\model\" -nosplash -nodesktop -minimize -r \'try;'.$x.';catch;end;quit();\'" /SC DAILY /RU INTERACTIVE');
+			shell_exec('SCHTASKS /RUN /TN "_notepad"');
+			shell_exec('SCHTASKS /DELETE /TN "_notepad" /F');
+			$i=date('U');
+			while(!file_exists($out)){
+			}
+			sleep(1);
+			$results=file_get_contents($out);
+		}
+		return($results);
+	}
+
+	protected function __getMovingAverage($stock){
+		try{
+			$pstmt=$this->db->prepare('SELECT datee,close_price FROM historical WHERE symbol=?');
+			$pstmt->execute([$stock]);
+			if($pstmt->rowCount()>0){
+				$i=0;$n=[];$ma=[];
+				while($rs=$pstmt->fetch(\PDO::FETCH_ASSOC)){
+					//print_r($rs);
+					$n[$i]=$rs['close_price'];
+					$sum+=$rs['close_price'];
+					if($i>29){
+						$sum=$sum-$n[($i-30)];
+					}
+					if($i>=29){
+						$ma[]=['price'=>Round(($sum/30),2),'datee'=>$rs['datee']];
+					}
+					$i++;
+				}
+			}
+			return($ma);
+		}
+		catch(\PDOException $e){
+			throw new DatastoreException('Database Error',2);
+		}
+	}
+
 	public function login($data){
 		if(empty($data['email'])){throw new DatastoreException('Invalid E-Mail Address',1);}
 		if(empty($data['password'])){throw new DatastoreException('Invalid Password',1);}
@@ -205,7 +272,8 @@ class datastore{
 			$this->__authenticateUser();
 			$retval=['stocks'=>'','google'=>''];
 			if($this->authenticatedUser['pkey']!=$user){throw new DatastoreException('You cannot view this record',3);}
-			$qry='SELECT stock, stock_name, A1.avg_price, A2.min_price, A3.max_price, A4.close_price AS current_price, A5.ten_day FROM stock INNER JOIN (SELECT symbol, ROUND(AVG(close_price), 2) AS avg_price FROM historical GROUP BY symbol) AS A1 ON A1.symbol = stock.stock INNER JOIN (SELECT symbol, MIN(close_price) AS min_price FROM historical GROUP BY symbol) AS A2 ON A2.symbol = stock.stock INNER JOIN (SELECT symbol, MAX(close_price) AS max_price FROM historical GROUP BY symbol) AS A3 ON A3.symbol = stock.stock INNER JOIN (SELECT H.symbol, H.close_price, H.datee FROM historical AS H INNER JOIN (SELECT symbol, MAX(datee) AS max_date FROM historical GROUP BY symbol) AS B ON B.max_date = H.`datee` AND B.symbol = H.`symbol`) AS A4 ON A4.symbol = stock.stock INNER JOIN (SELECT symbol, MAX(close_price) AS ten_day FROM historical WHERE DATEDIFF(NOW(), datee) <= 10 GROUP BY symbol) AS A5 ON A5.symbol = stock.stock WHERE `user`=?';
+			//$qry='SELECT stock, stock_name, A1.avg_price, A2.min_price, A3.max_price, A4.close_price AS current_price, A5.ten_day FROM stock INNER JOIN (SELECT symbol, ROUND(AVG(close_price), 2) AS avg_price FROM historical GROUP BY symbol) AS A1 ON A1.symbol = stock.stock INNER JOIN (SELECT symbol, MIN(close_price) AS min_price FROM historical GROUP BY symbol) AS A2 ON A2.symbol = stock.stock INNER JOIN (SELECT symbol, MAX(close_price) AS max_price FROM historical GROUP BY symbol) AS A3 ON A3.symbol = stock.stock INNER JOIN (SELECT H.symbol, H.close_price, H.datee FROM historical AS H INNER JOIN (SELECT symbol, MAX(datee) AS max_date FROM historical GROUP BY symbol) AS B ON B.max_date = H.`datee` AND B.symbol = H.`symbol`) AS A4 ON A4.symbol = stock.stock INNER JOIN (SELECT symbol, MAX(close_price) AS ten_day FROM historical WHERE DATEDIFF(NOW(), datee) <= 10 GROUP BY symbol) AS A5 ON A5.symbol = stock.stock WHERE `user`=?';
+			$qry='SELECT stock, stock_name, A1.avg_price, A2.min_price, A3.max_price, A4.close_price AS current_price, A5.ten_day, A6.moving_avg FROM stock INNER JOIN (SELECT symbol, ROUND(AVG(close_price), 2) AS avg_price FROM historical GROUP BY symbol) AS A1 ON A1.symbol = stock.stock INNER JOIN (SELECT symbol, MIN(close_price) AS min_price FROM historical GROUP BY symbol) AS A2 ON A2.symbol = stock.stock INNER JOIN (SELECT symbol, MAX(close_price) AS max_price FROM historical GROUP BY symbol) AS A3 ON A3.symbol = stock.stock INNER JOIN (SELECT H.symbol, H.close_price, H.datee FROM historical AS H INNER JOIN (SELECT symbol, MAX(datee) AS max_date FROM historical GROUP BY symbol) AS B ON B.max_date = H.`datee` AND B.symbol = H.`symbol`) AS A4 ON A4.symbol = stock.stock INNER JOIN (SELECT symbol, MAX(close_price) AS ten_day FROM historical WHERE DATEDIFF(NOW(), datee) <= 10 GROUP BY symbol) AS A5 ON A5.symbol = stock.stock INNER JOIN (SELECT symbol, ROUND(AVG(close_price), 2) AS moving_avg FROM historical WHERE DATEDIFF(NOW(), datee) < 31 GROUP BY symbol) AS A6 ON A6.symbol = stock.stock WHERE `user`=?';
 			//'
 			if(!empty($stock)){$qry.=' AND stock.stock="'.$stock.'"';}
 			$qry.=' ORDER BY stock.stock';
@@ -214,7 +282,7 @@ class datastore{
 			while($rs=$pstmt->fetch(\PDO::FETCH_ASSOC)){
 				$retval['stocks'][]=$rs;
 			}
-			$stmt=$this->db->query('SELECT stock.stock, stock.stock_name FROM stock INNER JOIN (SELECT symbol, AVG(close_price) AS avg_price FROM historical GROUP BY symbol) AS A1 ON A1.symbol = stock.stock INNER JOIN ( SELECT stock.stock, GP.goog_price FROM stock CROSS JOIN (SELECT MIN(close_price) AS goog_price FROM historical, stock WHERE symbol = "GOOG") AS GP ) AS A2 ON A2.stock=stock.stock WHERE A1.avg_price<A2.goog_price ORDER BY stock.stock');
+			$stmt=$this->db->query('SELECT stock.stock, stock.stock_name FROM stock INNER JOIN (SELECT symbol, AVG(close_price) AS avg_price FROM historical GROUP BY symbol) AS A1 ON A1.symbol = stock.stock INNER JOIN ( SELECT stock.stock, GP.goog_price FROM stock CROSS JOIN (SELECT MIN(close_price) AS goog_price FROM historical, stock WHERE symbol = "GOOG") AS GP ) AS A2 ON A2.stock=stock.stock WHERE A1.avg_price<A2.goog_price AND stock.user=4 ORDER BY stock.stock');
 			//'
 			while($rs=$stmt->fetch(\PDO::FETCH_ASSOC)){
 				$txt.='('.$rs['stock'].') '.$rs['stock_name'].', ';
@@ -264,42 +332,6 @@ class datastore{
 		}
 	}
 
-	protected function __getForecast($txt,$alg){
-		$in='C:\\Windows\\Temp\\ANN_input.txt';
-		$out='C:\\Windows\\Temp\\ANN_output.txt';
-
-		@unlink ($out);
-		switch($alg){
-			case 'ann':
-				$x='ANN';
-				file_put_contents($in,$txt.'5 5');
-			break;
-			case 'bay':
-				$x='BCF';
-				$q=explode(" ",$txt);
-				$z=array_slice($q,-15);
-				$txt=implode(" ",$z);
-				file_put_contents($in,$txt.' 0.05 11.1 5');
-			break;
-			case 'svm':
-				$x='SVM';
-				file_put_contents($in,$txt.'5 5');
-			break;
-			default:
-				exit;
-			break;
-		}
-		shell_exec('SCHTASKS /F /Create /TN _notepad /TR "matlab -sd \"C:\inetpub\wwwroot\se2\api\bsc\model\" -nosplash -nodesktop -minimize -r \'try;'.$x.';catch;end;quit();\'" /SC DAILY /RU INTERACTIVE');
-		shell_exec('SCHTASKS /RUN /TN "_notepad"');
-		shell_exec('SCHTASKS /DELETE /TN "_notepad" /F');
-		$i=date('U');
-		while(!file_exists($out)){
-		}
-		sleep(1);
-		$results=file_get_contents($out);
-		return($results);
-	}
-
 	public function getHistoricalStock($stock,$alg){
 		try{
 			$pstmt=$this->db->prepare('SELECT s.`stock_name`,datee,close_price FROM `historical` AS h INNER JOIN stock AS s ON s.`stock`=h.`symbol` WHERE symbol=? ORDER BY datee');
@@ -314,7 +346,8 @@ class datastore{
 					$retval['data'][]=$rs;
 					$txt.=$rs['close_price'].' ';
 				}
-				$retval['forecast']=$this->__getForecast($txt,$alg);
+				if($alg=='none'){$retval['moving_average']=$this->__getMovingAverage($stock);}
+				else{$retval['forecast']=$this->__getForecast($txt,$alg);}
 				return($retval);
 			}
 		}

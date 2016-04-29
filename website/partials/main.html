@@ -14,10 +14,11 @@
 				<td colspan="2">&nbsp;</td>
 				<td class="subheader">Stock Name</td>
 				<td class="subheader">Current</td>
-				<td class="subheader">10-day High</td>
+				<td class="subheader">10-Day High</td>
 				<td class="subheader">1-Year Low</td>
 				<td class="subheader">1-Year High</td>
 				<td class="subheader">1-Year Avg</td>
+				<td class="subheader">30-Day MA</td>
 			</thead>
 			<tbody>
 				<tr data-ng-repeat="stock in mCtrl.stocks">
@@ -29,6 +30,7 @@
 					<td>{{stock.min_price}}</td>
 					<td>{{stock.max_price}}</td>
 					<td>{{stock.avg_price}}</td>
+					<td>{{stock.moving_avg}}</td>
 				</tr>
 			</tbody>
 			</table>
